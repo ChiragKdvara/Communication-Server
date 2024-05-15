@@ -1,0 +1,40 @@
+{
+  "users": [
+    {
+      "username": "john_doe",
+      "email": "john.doe@example.com",
+      "role": "Admin",
+      "btm_lvl_id": 1
+    },
+    {
+      "username": "jane_smith",
+      "email": "jane.smith@example.com",
+      "role": "User",
+      "btm_lvl_id": 2
+    },
+    {
+      "username": "alex_jones",
+      "email": "alex.jones@example.com",
+      "role": "Manager",
+      "btm_lvl_id": 1
+    },
+    {
+      "username": "lisa_ray",
+      "email": "lisa.ray@example.com",
+      "role": "Analyst",
+      "btm_lvl_id": 3
+    },
+    {
+      "username": "amelie",
+      "email": "amelie@example.com",
+      "role": "Developer",
+      "btm_lvl_id": 4
+    },
+    {
+      "username": "Jake",
+      "email": "jake@example.com",
+      "role": "Analyst",
+      "btm_lvl_id": 5
+    }
+  ]
+}
