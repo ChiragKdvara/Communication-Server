@@ -1,0 +1,65 @@
+{
+  "hierarchy": ["Region", "Zone", "Cluster", "Branch"],
+  "data": [
+    {
+      "region": "West Coast",
+      "zone": "Pacific Northwest",
+      "cluster": "Seattle Cluster",
+      "branch": "Downtown Seattle"
+    },
+    {
+      "region": "West Coast",
+      "zone": "Pacific Northwest",
+      "cluster": "Seattle Cluster",
+      "branch": "Bellevue"
+    },
+    {
+      "region": "West Coast",
+      "zone": "California",
+      "cluster": "Los Angeles Cluster",
+      "branch": "Hollywood"
+    },
+    {
+      "region": "East Coast",
+      "zone": "New England",
+      "cluster": "Boston Cluster",
+      "branch": "Downtown Boston"
+    },
+    {
+      "region": "East Coast",
+      "zone": "New England",
+      "cluster": "Boston Cluster",
+      "branch": "Cambridge"
+    },
+    {
+      "region": "East Coast",
+      "zone": "Mid-Atlantic",
+      "cluster": "New York Cluster",
+      "branch": "Manhattan"
+    },
+    {
+      "region": "East Coast",
+      "zone": "Mid-Atlantic",
+      "cluster": "New York Cluster",
+      "branch": "Brooklyn"
+    },
+    {
+      "region": "Midwest",
+      "zone": "Great Lakes",
+      "cluster": "Chicago Cluster",
+      "branch": "Downtown Chicago"
+    },
+    {
+      "region": "Midwest",
+      "zone": "Great Lakes",
+      "cluster": "Chicago Cluster",
+      "branch": "Oak Park"
+    },
+    {
+      "region": "South",
+      "zone": "Southeast",
+      "cluster": "Atlanta Cluster",
+      "branch": "Midtown Atlanta"
+    }
+  ]
+}
