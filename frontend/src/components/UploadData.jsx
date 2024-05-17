@@ -1,149 +1,182 @@
-import { useState } from 'react'
-import { FileTrigger, Button } from 'react-aria-components'
-import axios from 'axios'
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import Header from "./Header";
+import { saveAs } from "file-saver";
+import axios from "axios";
 
-const UploadData = () => {
-  const [branchFile, setBranchFile] = useState(null)
-  const [branchUploadStatus, setBranchUploadStatus] = useState(null)
-  const [userFiles, setUserFiles] = useState([])
-  const [userUploadStatus, setUserUploadStatus] = useState(null)
+const Upload = () => {
+  const navigate = useNavigate();
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFileName, setSelectedFileName] = useState(null);
+  const [uploadStatus, setUploadStatus] = useState(null);
+  const [uploadStep, setUploadStep] = useState(1); // 1 for branch upload, 2 for user upload
 
-  const handleBranchFileSelect = (fileArray) => {
-    setBranchFile(fileArray[0]) // Store the actual branch file object
-  }
+  const handleBack = () => {
+    navigate("/admin");
+  };
 
-  const handleUserFileSelect = (fileArray) => {
-    setUserFiles(fileArray) // Store the actual user file objects
-  }
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    const fileExtension = file.name.split(".").pop().toLowerCase();
 
-  const uploadBranchFile = async (e) => {
-    e.preventDefault()
+    if (fileExtension === "json") {
+      setSelectedFile(file);
+      setSelectedFileName(file.name);
+    } else {
+      setUploadStatus("Error: Wrong File Format. Accepted formats is .json");
+    }
+  };
 
-    if (branchFile) {
-      const reader = new FileReader()
+  const fileStructureData = "Column1,Column2,Column3\nValue1,Value2,Value3";
+
+  const handleDownloadFileStructure = () => {
+    const blob = new Blob([fileStructureData], {
+      type: "text/csv;charset=utf-8",
+    });
+    saveAs(blob, "file-structure.csv");
+  };
+
+  const uploadData = async () => {
+    if (selectedFile) {
+      const reader = new FileReader();
 
       reader.onload = async (event) => {
         try {
-          const content = event.target.result // File content as text
-          const jsonData = JSON.parse(content) // Parse JSON content
-          console.log(jsonData)
+          const content = event.target.result;
+          const jsonData = JSON.parse(content);
 
-          // Send POST request to the specified branch endpoint
-          const response = await axios.post(
-            'http://localhost:8000/api/v1/hierarchy/upload-branch-data', // Branch endpoint
-            jsonData,
-            {
-              headers: {
-                'Content-Type': 'application/json', // Ensure correct content type
-              },
-            }
-          )
+          let endpoint;
+          if (uploadStep === 1) {
+            endpoint =
+              "http://localhost:8000/api/v1/hierarchy/upload-branch-data";
+          } else if (uploadStep === 2) {
+            endpoint = "http://localhost:8000/api/v1/users/add-users";
+          }
 
-          setBranchUploadStatus('Branch data uploaded successfully.')
-          console.log('Response:', response.data)
+          const response = await axios.post(endpoint, jsonData, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (uploadStep === 1) {
+            setUploadStatus("Branch data uploaded successfully.");
+            setUploadStep(2); // Move to the next step (user upload)
+          } else if (uploadStep === 2) {
+            setUploadStatus("User data uploaded successfully.");
+            setUploadStep(1); // Reset to the initial step (branch upload)
+          }
+
+          console.log("Response:", response.data);
         } catch (error) {
-          console.error('Error during branch upload:', error)
-          setBranchUploadStatus('Error during branch upload.')
+          console.error("Error during upload:", error);
+          setUploadStatus(
+            `Error during upload., ${error?.response?.data?.detail}`
+          );
         }
-      }
+      };
 
-      reader.readAsText(branchFile) // Read the branch file as text
+      reader.readAsText(selectedFile);
     } else {
-      console.warn('No branch file selected.')
+      console.warn("No file selected.");
     }
 
-    setBranchFile(null) // Clear the branch file state
-  }
-
-  const uploadUserFiles = async (e) => {
-    e.preventDefault()
-
-    if (userFiles.length > 0) {
-      const userFile = userFiles[0] // First user file in the array
-      const reader = new FileReader()
-
-      reader.onload = async (event) => {
-        try {
-          const content = event.target.result // File content as text
-          const jsonData = JSON.parse(content) // Parse JSON content
-
-          // Send POST request to the specified user endpoint
-          const response = await axios.post(
-            'http://localhost:8000/api/v1/users/add-users', // User endpoint
-            jsonData,
-            {
-              headers: {
-                'Content-Type': 'application/json', // Ensure correct content type
-              },
-            }
-          )
-
-          setUserUploadStatus('User data uploaded successfully.')
-          console.log('Response:', response.data)
-        } catch (error) {
-          console.error('Error during user upload:', error)
-          setUserUploadStatus(`Error during user upload., ${error?.response?.data?.detail}`)
-        }
-      }
-
-      reader.readAsText(userFile) // Read the user file as text
-    } else {
-      console.warn('No user file selected.')
-    }
-
-    setUserFiles([]) // Clear the user file state
-  }
+    setSelectedFile(null);
+    setSelectedFileName(null);
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center p-6">
-      <h1 className="text-2xl font-bold font-space">Upload Branch and User Data</h1>
-      {!branchUploadStatus && (
-        <form className="text-center" onSubmit={uploadBranchFile}>
-          <FileTrigger
-            acceptedFileTypes={['application/json']}
-            onSelect={(event) => {
-              const fileArray = Array.from(event) // Ensure it's an array
-              handleBranchFileSelect(fileArray)
-            }}>
-            <Button className="border-accent border-2 p-5 rounded-lg font-poppins font-medium text-lg">Select Branch Data</Button>
-            {branchFile && (
-              <>
-                <p className="m-2">{branchFile.name}</p>
-                <button type="submit" className="p-2 rounded-[8px] font-poppins font-medium">
-                  Submit
-                </button>
-              </>
+    <div className="h-screen w-full font-poppins">
+      <Header />
+      <div className="bg-primary w-full h-20 flex items-center justify-between">
+        <h1 className="m-0 p-4 text-white font-semibold">Upload</h1>
+      </div>
+      <div className="flex h-[40rem]">
+        <div className="w-1/2 p-20 h-full">
+          <div className="border-2 border-dashed rounded-2xl border-gray-400 h-[20rem] flex flex-col items-center justify-center relative">
+            <div className="absolute top-[-4rem] left-0 right-0 text-center">
+              <p className="text-center text-3xl font-bold mb-4">
+                {uploadStep === 1
+                  ? "Please Upload Hierarchy Data."
+                  : "Now you can Upload User Data"}
+              </p>
+            </div>
+            {!selectedFileName && (
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-center">Drag and drop your files here</p>
+                <p className="text-center">or</p>
+                <label className="bg-gray-200 text-gray-800 font-semibold rounded-md mx-40 px-4 py-2 w-[10rem] h-[3rem] flex items-center justify-center cursor-pointer">
+                  <span>Browse Files</span>
+                  <input
+                    type="file"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
             )}
-          </FileTrigger>
-        </form>
-      )}
-      {branchUploadStatus && (
-        <div className="text-center">
-          <p className="text-lg font-bold mt-4">{branchUploadStatus}</p>
-          <p>Now, please upload user data:</p>
-          <form onSubmit={uploadUserFiles}>
-            <FileTrigger
-              acceptedFileTypes={['application/json']}
-              onSelect={(event) => {
-                const fileArray = Array.from(event)
-                handleUserFileSelect(fileArray)
-              }}>
-              <Button className="border-accent border-2 p-5 rounded-lg font-poppins font-medium text-lg">Select User Data</Button>
-              {userFiles.length > 0 && (
-                <>
-                  <p className="m-2">{userFiles.map((f) => f.name).join(', ')}</p>
-                  <button type="submit" className="p-2 rounded-[8px] font-poppins font-medium">
-                    Submit
+            {selectedFileName && (
+              <div>
+                <p className="text-center text-3xl">Selected File:</p>
+                <p className="text-center">{selectedFileName}</p>
+                <div className="flex justify-center mt-4">
+                  <button
+                    className="bg-red-700 text-white rounded-[8px] text-[16px] p-2 font-medium font-poppins hover:cursor-pointer mr-2 px-4 py-2"
+                    onClick={uploadData}
+                  >
+                    {uploadStep === 1
+                      ? "Upload Branch Data"
+                      : "Upload User Data"}
                   </button>
-                </>
-              )}
-            </FileTrigger>
-          </form>
+                </div>
+              </div>
+            )}
+            {uploadStatus && (
+              <p className="text-lg font-bold mt-4 text-center absolute bottom-[-4rem] left-0 right-0">
+                {uploadStatus}
+              </p>
+            )}
+          </div>
+          <div className="flex justify-start mt-20">
+            <button
+              className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer"
+              onClick={handleBack}
+            >
+              Back
+            </button>
+          </div>
         </div>
-      )}
-      {userUploadStatus && <p className="text-lg font-bold mt-4 text-center">{userUploadStatus}</p>}
+        <div className="w-1 bg-primary mx-4 mt-20"></div>
+        <div className="w-1/2 p-4 pl-[4rem] pt-[4rem]">
+          <h2 className="text-md font-semibold mb-2">Instructions</h2>
+          <h3 className="text-lg font-semibold mb-1">File Upload:</h3>
+          <p>
+            Click on the `&quote;`Upload`&quot;` button or Drag and Drop the
+            file to be uploaded.
+          </p>
+          <h3 className="text-lg font-semibold mb-1">
+            Supported File Formats:
+          </h3>
+          <p>Ensure that the file you are uploading is of CSV format.</p>
+          <h3 className="text-lg font-semibold mb-1">
+            <a
+              href="#"
+              onClick={handleDownloadFileStructure}
+              className="text-saddlebrown no-underline"
+            >
+              Download File Structure *
+            </a>
+          </h3>
+          <p>
+            {" "}
+            Use the downloaded file structure as a reference to ensure that the
+            file you are preparing for upload follows the same format and
+            structure.{" "}
+          </p>
+        </div>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default UploadData
+export default Upload;
