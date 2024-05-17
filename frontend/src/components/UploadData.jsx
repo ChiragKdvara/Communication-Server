@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Header from "./Header";
-import { saveAs } from "file-saver";
 import axios from "axios";
 
 const Upload = () => {
@@ -27,13 +26,47 @@ const Upload = () => {
     }
   };
 
-  const fileStructureData = "Column1,Column2,Column3\nValue1,Value2,Value3";
+  const downloadBranchDataStructure = () => {
+    const branchData = {
+      hierarchy: ["Region", "Zone", "Cluster", "Branch"],
+      data: [
+        {
+          region: "",
+          zone: "",
+          cluster: "",
+          branch: "",
+        },
+      ],
+    };
 
-  const handleDownloadFileStructure = () => {
-    const blob = new Blob([fileStructureData], {
-      type: "text/csv;charset=utf-8",
-    });
-    saveAs(blob, "file-structure.csv");
+    const jsonString = JSON.stringify(branchData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "branch-data-structure.json";
+    link.click();
+  };
+
+  const downloadUserDataStructure = () => {
+    const userData = {
+      users: [
+        {
+          username: "",
+          email: "",
+          role: "",
+          btm_lvl_id: 1,
+        },
+      ],
+    };
+
+    const jsonString = JSON.stringify(userData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "user-data-structure.json";
+    link.click();
   };
 
   const uploadData = async () => {
@@ -157,21 +190,29 @@ const Upload = () => {
           <h3 className="text-lg font-semibold mb-1">
             Supported File Formats:
           </h3>
-          <p>Ensure that the file you are uploading is of CSV format.</p>
+          <p>Ensure that the file you are uploading is of JSON format.</p>
           <h3 className="text-lg font-semibold mb-1">
             <a
               href="#"
-              onClick={handleDownloadFileStructure}
+              onClick={downloadBranchDataStructure}
               className="text-saddlebrown no-underline"
             >
-              Download File Structure *
+              Download Branch - Data Structure
+            </a>
+          </h3>
+          <h3 className="text-lg font-semibold mb-1">
+            <a
+              href="#"
+              onClick={downloadUserDataStructure}
+              className="text-saddlebrown no-underline"
+            >
+              Download User - Data Structure
             </a>
           </h3>
           <p>
-            {" "}
             Use the downloaded file structure as a reference to ensure that the
             file you are preparing for upload follows the same format and
-            structure.{" "}
+            structure.
           </p>
         </div>
       </div>
