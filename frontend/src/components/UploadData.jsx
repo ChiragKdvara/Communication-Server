@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import Header from './Header'
-import { saveAs } from 'file-saver'
 import axios from 'axios'
 
 const Upload = () => {
@@ -19,21 +18,61 @@ const Upload = () => {
     const file = e.target.files[0]
     const fileExtension = file.name.split('.').pop().toLowerCase()
 
-    if (fileExtension === 'json') {
+    if (file.size === 0) {
+      setUploadStatus('Error: File is empty. Please select a non-empty file.')
+      setSelectedFile(null)
+      setSelectedFileName(null)
+    } else if (fileExtension === 'json') {
       setSelectedFile(file)
       setSelectedFileName(file.name)
     } else {
-      setUploadStatus('Error: Wrong File Format. Accepted formats is .json')
+      setUploadStatus('Error: Wrong File Format. Accepted format is .json')
+      setSelectedFile(null)
+      setSelectedFileName(null)
     }
   }
 
-  const fileStructureData = 'Column1,Column2,Column3\nValue1,Value2,Value3'
+  const downloadBranchDataStructure = () => {
+    const branchData = {
+      hierarchy: ['Region', 'Zone', 'Cluster', 'Branch'],
+      data: [
+        {
+          region: '',
+          zone: '',
+          cluster: '',
+          branch: '',
+        },
+      ],
+    }
 
-  const handleDownloadFileStructure = () => {
-    const blob = new Blob([fileStructureData], {
-      type: 'text/csv;charset=utf-8',
-    })
-    saveAs(blob, 'file-structure.csv')
+    const jsonString = JSON.stringify(branchData, null, 2)
+    const blob = new Blob([jsonString], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'branch-data-structure.json'
+    link.click()
+  }
+
+  const downloadUserDataStructure = () => {
+    const userData = {
+      users: [
+        {
+          username: '',
+          email: '',
+          role: '',
+          btm_lvl_id: 1,
+        },
+      ],
+    }
+
+    const jsonString = JSON.stringify(userData, null, 2)
+    const blob = new Blob([jsonString], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'user-data-structure.json'
+    link.click()
   }
 
   const uploadData = async () => {
@@ -88,14 +127,16 @@ const Upload = () => {
       <div className="bg-primary w-full h-20 flex items-center justify-between">
         <h1 className="m-0 p-4 text-white font-semibold">Upload</h1>
       </div>
-      <div className="flex">
-        <div className="w-1/2 px-4 my-4 h-full">
-          <p className="text-3xl font-semibold mb-4">{uploadStep === 1 ? `Please Upload Hierarchy Data.` : `Now you can Upload User Data`}</p>
-          <div className="border-2 border-dashed rounded-[8px] border-gray-400 flex flex-col items-center justify-center">
+      <div className="flex h-[40rem]">
+        <div className="w-1/2 p-20 h-full">
+          <div className="border-2 border-dashed rounded-2xl border-gray-400 h-[20rem] flex flex-col items-center justify-center relative">
+            <div className="absolute top-[-4rem] left-0 right-0 text-center">
+              <p className="text-center text-3xl font-bold mb-4">{uploadStep === 1 ? 'Please Upload Hierarchy Data.' : 'Now you can Upload User Data'}</p>
+            </div>
             {!selectedFileName && (
-              <div className="flex flex-col items-center gap-5 justify-center py-10">
-                <p className="m-0 font-semibold">Drag and drop your files here</p>
-                <p className="m-0">or</p>
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-center">Drag and drop your files here</p>
+                <p className="text-center">or</p>
                 <label className="bg-gray-200 text-gray-800 font-semibold rounded-md mx-40 px-4 py-2 w-[10rem] h-[3rem] flex items-center justify-center cursor-pointer">
                   <span>Browse Files</span>
                   <input type="file" onChange={handleFileChange} className="hidden" />
@@ -114,9 +155,9 @@ const Upload = () => {
                 </div>
               </div>
             )}
+            {uploadStatus && <p className="text-lg font-bold mt-4 text-center absolute bottom-[-4rem] left-0 right-0">{uploadStatus}</p>}
           </div>
-          {uploadStatus && <p className="text-lg font-bold mt-4">{uploadStatus}</p>}
-          <div className="flex justify-start mt-4">
+          <div className="flex justify-start mt-20">
             <button
               className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer"
               onClick={handleBack}>
@@ -124,20 +165,24 @@ const Upload = () => {
             </button>
           </div>
         </div>
-        {/* Divider */}
-        <div className="w-1/2 p-4">
+        <div className="w-1 bg-primary mx-4 mt-20"></div>
+        <div className="w-1/2 p-4 pl-[4rem] pt-[4rem]">
           <h2 className="text-md font-semibold mb-2">Instructions</h2>
           <h3 className="text-lg font-semibold mb-1">File Upload:</h3>
-          <p>Click on the Browse Files button or Drag and Drop the file to be uploaded.</p>
+          <p>Click on the `&quote;`Upload`&quot;` button or Drag and Drop the file to be uploaded.</p>
           <h3 className="text-lg font-semibold mb-1">Supported File Formats:</h3>
           <p>Ensure that the file you are uploading is of JSON format.</p>
-          <h3 className="text-lg font-semibold mb-1 text-secondary hover:cursor-pointer">
-            <a onClick={handleDownloadFileStructure} className="underline">
-              Download File Structure
+          <h3 className="text-lg font-semibold mb-1">
+            <a href="#" onClick={downloadBranchDataStructure} className="text-saddlebrown no-underline">
+              Download Branch - Data Structure
             </a>
-            <span className="text-red-500 no-underline"> *</span>
           </h3>
-          <p> Use the downloaded file structure as a reference to ensure that the file you are preparing for upload follows the same format and structure. </p>
+          <h3 className="text-lg font-semibold mb-1">
+            <a href="#" onClick={downloadUserDataStructure} className="text-saddlebrown no-underline">
+              Download User - Data Structure
+            </a>
+          </h3>
+          <p>Use the downloaded file structure as a reference to ensure that the file you are preparing for upload follows the same format and structure.</p>
         </div>
       </div>
     </div>
