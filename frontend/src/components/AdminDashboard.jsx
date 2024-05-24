@@ -1,10 +1,34 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 import Header from './Header'
 import Sidebar from './Sidebar'
 import { LayoutPanelTop, MessageSquareShare, Send, TrendingUp } from 'lucide-react'
 
 const AdminDashboard = () => {
   const navigate = useNavigate()
+  const [templates, setTemplates] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/v1/templates/', {
+          params: { limit: 5 },
+        })
+        setTemplates(response.data)
+      } catch (error) {
+        console.error('Error fetching templates:', error)
+        setError('Failed to fetch templates')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTemplates()
+  }, [])
+
   const onCreateTemplateClick = () => {
     navigate('/create-template', {
       state: {
@@ -12,12 +36,19 @@ const AdminDashboard = () => {
         message_title: '',
         message_content: '',
         selected_branch: '',
+        previousPage: '/admin', // Set the previous page
       },
     })
   }
 
   const onViewMessageClick = () => {
     navigate('/sent-messages')
+  }
+
+  const onTemplateUseClick = (templateData) => {
+    navigate('/select-filter', {
+      state: { ...templateData, previousPage: '/admin' }, // Set the previous page
+    })
   }
 
   return (
@@ -29,7 +60,7 @@ const AdminDashboard = () => {
       </div>
       {/* Stats and Template Start */}
       <div className="flex w-full">
-        {/* Stats Start*/}
+        {/* Stats Start */}
         <div className="flex flex-col px-4 w-1/2 h-full">
           <h2 className="font-semibold uppercase text-secondary flex gap-2 items-center">
             This Weeks Statistics <TrendingUp size="24px" />
@@ -48,51 +79,39 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
-        {/* Stats End*/}
+        {/* Stats End */}
 
-        {/* Template Start*/}
-        <div className="flex flex-col px-4 w-1/2 h-full opacity-30">
+        {/* Template Start */}
+        <div className="flex flex-col px-4 w-1/2 h-full">
           <h2 className="font-semibold uppercase text-secondary flex gap-2 items-center">
             Frequently Used Templates <LayoutPanelTop size="24px" />
           </h2>
           <div className="flex">
-            <div className=" rounded-[8px] w-full">
-              {/* Sample Templates Start */}
-              <div className="flex items-center justify-between px-4 bg-primary mb-2 rounded-[8px]">
-                <p>Sample Template</p>
-                <a href="#" className="text-accent">
-                  Edit
-                </a>
-              </div>
-              <div className="flex items-center justify-between px-4 bg-primary mb-2 rounded-[8px]">
-                <p>Sample Template</p>
-                <a href="#" className="text-accent">
-                  Edit
-                </a>
-              </div>
-              <div className="flex items-center justify-between px-4 bg-primary mb-2 rounded-[8px]">
-                <p>Sample Template</p>
-                <a href="#" className="text-accent">
-                  Edit
-                </a>
-              </div>
-              <div className="flex items-center justify-between px-4 bg-primary mb-2 rounded-[8px]">
-                <p>Sample Template</p>
-                <a href="#" className="text-accent">
-                  Edit
-                </a>
-              </div>
-              <div className="flex items-center justify-between px-4 bg-primary mb-2 rounded-[8px]">
-                <p>Sample Template</p>
-                <a href="#" className="text-accent">
-                  Edit
-                </a>
-              </div>
-              {/* Sample Templates End */}
+            <div className="rounded-[8px] w-full">
+              {/* Display Templates Start */}
+              {loading ? (
+                <p className="m-0 font-medium">
+                  Loading templates<span className="animate-pulse">...</span>
+                </p>
+              ) : error ? (
+                <p className="m-0 font-medium">{error}</p>
+              ) : templates.length === 0 ? (
+                <p className="m-0 font-medium">No templates found</p>
+              ) : (
+                templates.map((template) => (
+                  <div key={template.template_id} className="flex items-center justify-between px-4 bg-primary mb-2 rounded-[8px]">
+                    <p>{template.template_name}</p>
+                    <a className="text-accent cursor-pointer" onClick={() => onTemplateUseClick(template)}>
+                      Use
+                    </a>
+                  </div>
+                ))
+              )}
+              {/* Display Templates End */}
             </div>
           </div>
         </div>
-        {/* Template End*/}
+        {/* Template End */}
       </div>
       {/* Stats and Template End */}
 

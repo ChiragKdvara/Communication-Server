@@ -1,9 +1,9 @@
-import { useTemplate } from './TemplateContext'
+import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Input } from 'react-aria-components'
-import { useEffect, useState, useRef } from 'react'
+import { useTemplate } from './TemplateContext'
 import Header from './Header'
 import { ArrowBigLeft, CirclePlus, FilePlus2 } from 'lucide-react'
+import axios from 'axios'
 
 const CreateTemplate = () => {
   const navigate = useNavigate()
@@ -21,13 +21,13 @@ const CreateTemplate = () => {
   const validateForm = () => {
     const validationErrors = {}
 
-    if (!templateData.template_name || templateData.template_name == false) {
+    if (!templateData.template_name || templateData.template_name.trim() === '') {
       validationErrors.template_name = 'Template name is required'
     }
-    if (!templateData.message_title || templateData.message_title == false) {
+    if (!templateData.message_title || templateData.message_title.trim() === '') {
       validationErrors.message_title = 'Message title is required'
     }
-    if (!templateData.message_content || templateData.message_content == false) {
+    if (!templateData.message_content || templateData.message_content.trim() === '') {
       validationErrors.message_content = 'Message content is required'
     }
 
@@ -35,14 +35,26 @@ const CreateTemplate = () => {
     return Object.keys(validationErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (validateForm()) {
-      navigate('/select-filter', {
-        state: { ...templateData },
-      })
-      setTemplateData({ template_name: '', message_title: '', message_content: '' })
+      try {
+        const response = await axios.post('http://localhost:8000/api/v1/templates/', {
+          template_name: templateData.template_name,
+          message_title: templateData.message_title,
+          message_content: templateData.message_content,
+        })
+
+        console.log('Template saved:', response.data)
+        navigate('/select-filter', {
+          state: { ...templateData, previousPage: '/create-template' },
+        })
+        setTemplateData({ template_name: '', message_title: '', message_content: '' })
+      } catch (error) {
+        setErrors({ unique_temp_name_error: error.response.data.detail })
+        console.error('Error saving template:', error)
+      }
     }
   }
 
@@ -113,22 +125,27 @@ const CreateTemplate = () => {
           <div className="inputs w-3/4">
             <h2 className="font-semibold uppercase text-secondary mx-1">Enter Template Details</h2>
             <form onSubmit={handleSubmit} className="flex flex-col">
-              <label htmlFor="temp_name">Enter Template Name: {errors.template_name && <span className="text-red-500 font-medium m-0">({errors.template_name})</span>}</label>
-              <Input
+              <label htmlFor="temp_name">
+                Enter Template Name:
+                {errors.template_name && <span className="text-red-500 font-medium m-0"> ({errors.template_name})</span>}
+                {errors.unique_temp_name_error && <span className="text-red-500 font-medium m-0"> ({errors.unique_temp_name_error})</span>}
+              </label>
+              <input
                 type="text"
                 id="temp_name"
                 value={templateData.template_name}
                 onChange={(e) => setTemplateData({ ...templateData, template_name: e.target.value })}
-                className="border-accent border-2 border-solid rounded-[8px] p-2"
+                className={`border-accent border-2 border-solid rounded-[8px] p-2  font-medium  font-poppins
+                  ${errors.template_name ? 'border-red-500' : 'border-accent'}`}
               />
-
               <label htmlFor="msg_title">Enter Message Title: {errors.message_title && <span className="text-red-500 font-medium m-0">({errors.message_title})</span>}</label>
-              <Input
+              <input
                 type="text"
                 id="msg_title"
                 value={templateData.message_title}
                 onChange={(e) => setTemplateData({ ...templateData, message_title: e.target.value })}
-                className="border-accent border-2 border-solid rounded-[8px] p-2"
+                className={`border-accent border-2 border-solid rounded-[8px] p-2 font-poppins
+                  ${errors.message_title ? 'border-red-500' : 'border-accent'}`}
               />
 
               <label htmlFor="msg_content">Enter Message Content: {errors.message_content && <span className="text-red-500 font-medium m-0">({errors.message_content})</span>}</label>
@@ -139,7 +156,8 @@ const CreateTemplate = () => {
                 value={templateData.message_content}
                 onChange={(e) => setTemplateData({ ...templateData, message_content: e.target.value })}
                 onKeyDown={handleBackspace}
-                className="border-accent border-2 border-solid rounded-[8px] p-2 font-poppins"
+                className={`border-accent border-2 border-solid rounded-[8px] p-2 font-poppins
+                  ${errors.message_content ? 'border-red-500' : 'border-accent'}`}
               />
 
               <div className="flex gap-3 mt-3">

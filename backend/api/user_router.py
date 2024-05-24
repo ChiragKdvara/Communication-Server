@@ -1,6 +1,7 @@
 # Import necessary modules
 from typing import List
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import and_, create_engine, MetaData, Table, Column, Integer, String, ForeignKey, select, text
 from sqlalchemy.orm import sessionmaker
@@ -8,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import os
 import logging
 from datetime import datetime
-from utils.table_hierarchy import find_relationships,find_bottom_most_level
+from utils.table_hierarchy import find_relationships, find_bottom_most_level
 
 
 # Set up database connection
@@ -25,7 +26,6 @@ metadata.reflect(bind=engine)
 router = APIRouter()
 
 
-
 # Pydantic models for FastAPI
 class UserCreate(BaseModel):
     username: str
@@ -33,8 +33,10 @@ class UserCreate(BaseModel):
     role: str
     btm_lvl_id: int
 
+
 class UserBatchCreate(BaseModel):
-    users: list[UserCreate]
+    users: List[UserCreate]
+
 
 # Endpoint for batch user creation
 @router.post("/add-users")
@@ -44,12 +46,12 @@ async def create_users_batch(user_batch: UserBatchCreate):
     bottom_most = find_bottom_most_level(relationships)
 
     # Remove the 'lvl_' prefix if required
-    bottom_most_name = bottom_most[4:] 
+    bottom_most_name = bottom_most[4:]
     bottom_most_id = f"{bottom_most_name}_id"
     logging.debug(f'bmi: {bottom_most_id}')
-    foreign_key_id=f'lvl_{bottom_most_name}.id'
+    foreign_key_id = f'lvl_{bottom_most_name}.id'
     logging.debug(f'bmi: {bottom_most_id}, fki: {foreign_key_id}')
-    
+
     try:
         metadata = MetaData()
 
@@ -59,7 +61,7 @@ async def create_users_batch(user_batch: UserBatchCreate):
         user_table = Table(
             'users', metadata,
             Column('id', Integer, primary_key=True, autoincrement=True),
-            Column('username', String(50), unique=True, nullable=False),
+            Column('username', String(50), nullable=False),
             Column('email', String(100), unique=True, nullable=False),
             Column('role', String(50), nullable=False),
             Column(bottom_most_id, Integer, ForeignKey(foreign_key_id)),  # Ensure correct foreign key
@@ -70,27 +72,48 @@ async def create_users_batch(user_batch: UserBatchCreate):
 
         # Create the 'users' table without affecting existing tables
         metadata.create_all(engine)
-        
+
         for user_data in user_batch.users:
             existing_user = session.query(user_table).filter(
-                (user_table.c.username == user_data.username) |
                 (user_table.c.email == user_data.email)
             ).first()
-            
-            if existing_user:
-                raise HTTPException(status_code=400, detail=f"Duplicate Found: Username or email already exists")
 
-            # Insert new user
-            session.execute(user_table.insert().values(
-                username=user_data.username,
-                email=user_data.email,
-                role=user_data.role,
-                **{bottom_most_id: user_data.btm_lvl_id},
-            ))
+            if existing_user:
+                # Check if the new data is the same as the existing data
+                is_same = (
+                    existing_user.username == user_data.username and
+                    existing_user.role == user_data.role and
+                    existing_user[4] == user_data.btm_lvl_id
+                )
+                if is_same:
+                    continue
+
+                # Update the existing user with new data
+                session.execute(user_table.update().where(
+                    user_table.c.email == user_data.email
+                ).values(
+                    username=user_data.username,
+                    role=user_data.role,
+                    **{bottom_most_id: user_data.btm_lvl_id},
+                ))
+            else:
+                # Insert new user
+                logging.debug(f'user_data: {user_data.username}')
+                session.execute(user_table.insert().values(
+                    username=user_data.username,
+                    email=user_data.email,
+                    role=user_data.role,
+                    **{bottom_most_id: user_data.btm_lvl_id},
+                ))
 
         session.commit()  # Commit all users in a single transaction
 
-        return {"message": "Users created successfully"}
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "message": "Users data added successfully",
+            }
+        )
 
     except SQLAlchemyError as e:
         session.rollback()  # Rollback in case of errors

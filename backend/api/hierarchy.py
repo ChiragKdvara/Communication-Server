@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException,Query
+from fastapi import APIRouter, HTTPException,Query,status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey,text,select
 from sqlalchemy.orm import sessionmaker
@@ -86,7 +87,7 @@ def insert_or_get(session, table, item_data: Dict[str, str], parent_column=None)
     session.commit()  # Commit to get the ID
     return result.inserted_primary_key[0]
 
-@router.post("/upload-branch-data")
+@router.post("/upload-hierarchy-data")
 async def create_tables_and_add_data(request: HierarchicalInput):
     # Start a new database session
     session = Session()
@@ -133,10 +134,13 @@ async def create_tables_and_add_data(request: HierarchicalInput):
                 previous_table_name = table_name
                 previous_id = new_id
 
-        return {
-            "message": "Tables and data created successfully",
-            "created_tables": list(created_tables.keys()),
-        }
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "message": "Tables and data created successfully",
+                "created_tables": list(created_tables.keys()),
+            }
+        )
 
     except SQLAlchemyError as e:
         session.rollback()  # Rollback on error

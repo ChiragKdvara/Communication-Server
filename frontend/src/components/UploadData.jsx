@@ -47,7 +47,7 @@ const Upload = () => {
 
           let endpoint
           if (uploadStep === 1) {
-            endpoint = 'http://localhost:8000/api/v1/hierarchy/upload-branch-data'
+            endpoint = 'http://localhost:8000/api/v1/hierarchy/upload-hierarchy-data'
           } else if (uploadStep === 2) {
             endpoint = 'http://localhost:8000/api/v1/users/add-users'
           }
@@ -59,17 +59,17 @@ const Upload = () => {
           })
 
           if (uploadStep === 1) {
-            setUploadStatus('Branch data uploaded successfully.')
+            setUploadStatus('Hierarchy data uploaded successfully.')
             setUploadStep(2) // Move to the next step (user upload)
           } else if (uploadStep === 2) {
-            setUploadStatus('User data uploaded successfully.')
+            setUploadStatus(response.data.message)
             setUploadStep(1) // Reset to the initial step (branch upload)
           }
 
           console.log('Response:', response.data)
         } catch (error) {
           console.error('Error during upload:', error)
-          setUploadStatus(`Error during upload., ${error?.response?.data?.detail}`)
+          setUploadStatus(`Error during upload., ${error?.response?.data?.message ? error?.response?.data?.message : error}`)
         }
       }
 
@@ -109,7 +109,7 @@ const Upload = () => {
                 </p>
                 <div className="flex justify-center">
                   <button className="bg-red-700 text-white rounded-[8px] text-[16px] p-2 font-medium font-poppins hover:cursor-pointer mr-2 px-4 py-2" onClick={uploadData}>
-                    {uploadStep === 1 ? 'Upload Branch Data' : 'Upload User Data'}
+                    {uploadStep === 1 ? 'Upload Hierarchy Data' : 'Upload User Data'}
                   </button>
                 </div>
               </div>
