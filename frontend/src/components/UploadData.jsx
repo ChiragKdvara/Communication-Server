@@ -18,11 +18,17 @@ const Upload = () => {
     const file = e.target.files[0];
     const fileExtension = file.name.split(".").pop().toLowerCase();
 
-    if (fileExtension === "json") {
+    if (file.size === 0) {
+      setUploadStatus("Error: File is empty. Please select a non-empty file.");
+      setSelectedFile(null);
+      setSelectedFileName(null);
+    } else if (fileExtension === "json") {
       setSelectedFile(file);
       setSelectedFileName(file.name);
     } else {
-      setUploadStatus("Error: Wrong File Format. Accepted formats is .json");
+      setUploadStatus("Error: Wrong File Format. Accepted format is .json");
+      setSelectedFile(null);
+      setSelectedFileName(null);
     }
   };
 

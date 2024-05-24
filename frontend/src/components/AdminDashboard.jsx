@@ -1,24 +1,29 @@
-import { useNavigate } from 'react-router-dom'
-import Header from './Header'
-import Sidebar from './Sidebar'
-import { LayoutPanelTop, MessageSquareShare, Send, TrendingUp } from 'lucide-react'
+import { useNavigate } from "react-router-dom";
+import Header from "./Header";
+import Sidebar from "./Sidebar";
+import {
+  LayoutPanelTop,
+  MessageSquareShare,
+  Send,
+  TrendingUp,
+} from "lucide-react";
 
 const AdminDashboard = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const onCreateTemplateClick = () => {
-    navigate('/create-template', {
+    navigate("/create-template", {
       state: {
-        template_name: '',
-        message_title: '',
-        message_content: '',
-        selected_branch: '',
+        template_name: "",
+        message_title: "",
+        message_content: "",
+        selected_branch: "",
       },
-    })
-  }
+    });
+  };
 
   const onViewMessageClick = () => {
-    navigate('/sent-messages')
-  }
+    navigate("/sent-messages");
+  };
 
   return (
     <div className="h-screen w-full font-poppins">
@@ -98,18 +103,22 @@ const AdminDashboard = () => {
 
       {/* Actions Start */}
       <div className="flex p-4 gap-3">
-        <button className="bg-secondary flex gap-2 items-center text-white rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer" onClick={onCreateTemplateClick}>
+        <button
+          className="bg-secondary flex gap-2 items-center text-white rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer"
+          onClick={onCreateTemplateClick}
+        >
           Send Message <Send size="18px" />
         </button>
         <button
           className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer"
-          onClick={onViewMessageClick}>
+          onClick={onViewMessageClick}
+        >
           View Messages <MessageSquareShare size="18px" />
         </button>
       </div>
       {/* Actions End */}
     </div>
-  )
-}
+  );
+};
 
-export default AdminDashboard
+export default AdminDashboard;
