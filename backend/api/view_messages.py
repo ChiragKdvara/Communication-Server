@@ -46,17 +46,15 @@ async def view_messages(limit: int = Query(default=10, description="Limit the nu
                 {reference_table.name}.template_name,
                 {reference_table.name}.id
             FROM 
-                {exp_message_table.name}
-            JOIN 
                 {reference_table.name} 
+            JOIN 
+                {exp_message_table.name}
             ON 
-                {exp_message_table.name}.reference_id = {reference_table.name}.id
+               {reference_table.name}.id = {exp_message_table.name}.reference_id 
             ORDER BY 
                 {exp_message_table.name}.sent_time DESC
-            LIMIT 
-                :limit
             """
-        ).bindparams(limit=limit)
+        )
         logging.debug(f'query: {query}')
 
 

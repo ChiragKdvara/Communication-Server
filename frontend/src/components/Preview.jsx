@@ -8,7 +8,8 @@ import { ArrowBigLeft, CircleCheckBig, CircleX, Send } from 'lucide-react'
 const Preview = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const data = location.state
+  const data = location?.state
+  console.log(location?.state)
 
   const [isModalOpen, setIsModalOpen] = useState(false) // State to control modal visibility
   const [userCount, setUserCount] = useState(0) // State to hold the user count
@@ -21,6 +22,7 @@ const Preview = () => {
         message_title: data.message_title,
         message_content: data.message_content,
         selected_branch: data.selected_branch, // Include the selected btm_lvl
+        previousPage: location?.state?.previousPage,
       },
     })
   }

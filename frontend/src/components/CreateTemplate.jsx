@@ -161,7 +161,7 @@ const CreateTemplate = () => {
                 id="msg_title"
                 value={templateData.message_title}
                 onChange={(e) => setTemplateData({ ...templateData, message_title: e.target.value })}
-                className={`border-accent border-2 border-solid rounded-[8px] p-2 font-poppins
+                className={`border-accent border-2 border-solid rounded-[8px] p-2 font-medium font-poppins
                   ${errors.message_title ? 'border-red-500' : 'border-accent'}`}
               />
 
@@ -178,7 +178,7 @@ const CreateTemplate = () => {
                   })
                 }
                 onKeyDown={handleBackspace}
-                className={`border-accent border-2 border-solid rounded-[8px] p-2 font-poppins
+                className={`border-accent border-2 border-solid rounded-[8px] p-2 font-poppins font-medium
                   ${errors.message_content ? 'border-red-500' : 'border-accent'}`}
               />
 

@@ -56,7 +56,7 @@ const SelectFilter = () => {
       state: {
         ...passedState,
         selected_branch: selectedBranch,
-        previousPage: '/select-filter', // Set the current page as the previous page
+        previousPage: location?.state?.previousPage, // Set the current page as the previous page
       },
     })
   }
@@ -118,7 +118,7 @@ const SelectFilter = () => {
 
         {/* Create Template Start*/}
         <div className="flex flex-col px-4 w-1/2 h-full">
-          <h2 className="font-semibold uppercase text-secondary">Create New Filter</h2>
+          <h2 className="font-semibold uppercase text-secondary">Choose Filter</h2>
           <label htmlFor="search_filter" className="font-medium">
             Filter Name <span className="text-red-500">*</span>
           </label>
@@ -159,7 +159,7 @@ const SelectFilter = () => {
               </div>
               <div className="flex gap-3 mt-6">
                 <button type="submit" className="bg-secondary text-white rounded-[8px] text-[16px] p-3 font-poppins font-medium cursor-pointer flex gap-2 items-center">
-                  Create Filter <Sparkles size="18px" />
+                  Continue <Sparkles size="18px" />
                 </button>
                 <button
                   onClick={handleBack}
