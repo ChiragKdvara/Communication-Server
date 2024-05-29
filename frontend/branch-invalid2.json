@@ -1,0 +1,17 @@
+{
+    "hierarchy": ["Region", "Zone", "Cluster", "Branch"],
+    "data": [
+      {
+        "region": "",
+        "zone": "",
+        "cluster": "",
+        "branch": ""
+      },
+      {
+        "region": "",
+        "zone": "",
+        "cluster": "",
+        "branch": ""
+      }
+    ]
+}

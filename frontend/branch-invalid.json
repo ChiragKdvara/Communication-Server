@@ -1,0 +1,17 @@
+{
+    "hierarchy": ["Region", "Zone", "Cluster", "Branch"],
+    "data": [
+      {
+        "cluster": "Seattle Cluster",
+        "branch": "Downtown Seattle"
+      },
+      {
+        "region": "West Coast",
+
+        "branch": "Bellevue"
+      },
+      {
+        "region": "West Coast"
+      }
+    ]
+}
