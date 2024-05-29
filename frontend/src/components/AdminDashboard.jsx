@@ -65,7 +65,7 @@ const AdminDashboard = () => {
           <h2 className="font-semibold uppercase text-secondary flex gap-2 items-center">
             This Weeks Statistics <TrendingUp size="24px" />
           </h2>
-          <div className="flex w-full h-1/2 gap-5 justify-between">
+          <div className="flex w-full gap-5 justify-between">
             <div className="w-3/4 bg-primary rounded-[8px]"></div>
             <div className="flex flex-col w-1/4 gap-5 text-white font-medium justify-between">
               <div className="bg-primary h-1/2 rounded-[8px] text-start px-4">
@@ -99,10 +99,10 @@ const AdminDashboard = () => {
                 <p className="m-0 font-medium">No templates found</p>
               ) : (
                 templates.map((template) => (
-                  <div key={template.template_id} className="flex items-center justify-between px-4 bg-primary mb-2 rounded-[8px]">
+                  <div key={template.template_id} className="flex items-center justify-between text-white px-4 bg-primary mb-2 rounded-[8px]">
                     <p>{template.template_name}</p>
-                    <a className="text-accent cursor-pointer" onClick={() => onTemplateUseClick(template)}>
-                      Use
+                    <a className="text-secondary cursor-pointer font-medium underline underline-offset-2" onClick={() => onTemplateUseClick(template)}>
+                      Use Template
                     </a>
                   </div>
                 ))

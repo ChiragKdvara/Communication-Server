@@ -54,12 +54,10 @@ const ViewMessages = () => {
             </div>
           </div>
           <div className="flex flex-col gap-2 w-full mb-8">
-            <div className="flex justify-between bg-gray-200/50 rounded-[8px] p-3">
+            <div className="flex justify-between items-center bg-secondary text-white rounded-[8px] p-3">
               <p className="m-0 q-1/2 px-1">Template Name</p>
-              <div className="w-1/2 flex justify-between px-1">
-                <p className="m-0">Sent Time</p>
-                <p className="m-0">Action</p>
-              </div>
+              <p className="m-0">Sent Time</p>
+              <p className="m-0">Action</p>
             </div>
             {loading ? (
               <div>Loading...</div>
@@ -67,13 +65,13 @@ const ViewMessages = () => {
               <p className="font-medium px-2 text-xl mt-1">No Messages Found</p>
             ) : (
               messages?.map((message) => (
-                <div key={message.reference_id} className="flex justify-between items-center border-b-2 border-0 border-accent border-solid rounded-[8px] p-3">
+                <div key={message.reference_id} className="flex justify-between items-center bg-primary text-white rounded-[8px] p-3">
                   <p className="m-0 w-1/3 truncate">{message.template_name}</p>
                   <div className="w-1/2 flex justify-between items-center">
                     <p className="m-0">{message.sent_time}</p>
-                    <button className="bg-secondary text-white rounded-[8px] text-[16px] px-2 font-poppins hover:cursor-pointer" onClick={() => handleViewClick(message.reference_id)}>
-                      View
-                    </button>
+                    <a className="text-secondary cursor-pointer font-medium underline underline-offset-2" onClick={() => handleViewClick(message.reference_id)}>
+                      View Message
+                    </a>
                   </div>
                 </div>
               ))
