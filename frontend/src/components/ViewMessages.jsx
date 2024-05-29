@@ -1,36 +1,49 @@
-import { ArrowBigLeft, SlidersHorizontal } from 'lucide-react'
-import Header from './Header'
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import { ArrowBigLeft, SlidersHorizontal } from "lucide-react";
+import Header from "./Header";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const ViewMessages = () => {
-  const navigate = useNavigate()
-
-  const [messages, setMessages] = useState([])
-  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const messagesPerPage = 6; // Set the number of messages to display per page
 
   useEffect(() => {
-    axios
-      .get('http://localhost:8000/api/v1/viewMessages/')
-      .then((response) => {
-        setMessages(response.data.messages)
-      })
-      .catch((error) => {
-        console.error('Error fetching messages:', error)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }, [])
+    const fetchMessages = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/v1/viewMessages/?page=${currentPage}`
+        );
+        setMessages(response.data.messages);
+        setTotalPages(Math.ceil(response.data.totalMessages / messagesPerPage));
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMessages();
+  }, [currentPage]);
 
   const handleBack = () => {
-    navigate('/admin')
-  }
+    navigate("/admin");
+  };
 
   const handleViewClick = (id) => {
-    navigate(`/sent-messages/${id}`)
-  }
+    navigate(`/sent-messages/${id}`);
+  };
+
+  const indexOfLastMessage = currentPage * messagesPerPage;
+  const indexOfFirstMessage = indexOfLastMessage - messagesPerPage;
+  const currentMessages = messages.slice(
+    indexOfFirstMessage,
+    indexOfLastMessage
+  );
 
   return (
     <div className="h-screen w-full font-poppins">
@@ -47,8 +60,14 @@ const ViewMessages = () => {
               Template Name
             </label>
             <div className="flex w-full justify-between gap-2">
-              <input type="search" name="search_filter" id="search_filter" className="w-full font-poppins border-2 border-accent rounded-[8px] p-2 my-2" placeholder="Search for a Template" />
-              <button className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-2 my-2  font-medium font-poppins hover:cursor-pointer">
+              <input
+                type="search"
+                name="search_filter"
+                id="search_filter"
+                className="w-full font-poppins border-2 border-accent rounded-[8px] p-2 my-2"
+                placeholder="Search for a Template"
+              />
+              <button className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-2 my-2 font-medium font-poppins hover:cursor-pointer">
                 Filter <SlidersHorizontal size="18px" />
               </button>
             </div>
@@ -61,15 +80,21 @@ const ViewMessages = () => {
             </div>
             {loading ? (
               <div>Loading...</div>
-            ) : messages?.length == 0 ? (
+            ) : currentMessages?.length === 0 ? (
               <p className="font-medium px-2 text-xl mt-1">No Messages Found</p>
             ) : (
-              messages?.map((message) => (
-                <div key={message.reference_id} className="flex justify-between items-center bg-primary text-white rounded-[8px] p-3">
+              currentMessages?.map((message) => (
+                <div
+                  key={message.reference_id}
+                  className="flex justify-between items-center bg-primary text-white rounded-[8px] p-3"
+                >
                   <p className="m-0 w-1/3 truncate">{message.template_name}</p>
                   <div className="w-1/2 flex justify-between items-center">
                     <p className="m-0">{message.sent_time}</p>
-                    <a className="text-secondary cursor-pointer font-medium underline underline-offset-2" onClick={() => handleViewClick(message.reference_id)}>
+                    <a
+                      className="text-secondary cursor-pointer font-medium underline underline-offset-2"
+                      onClick={() => handleViewClick(message.reference_id)}
+                    >
                       View Message
                     </a>
                   </div>
@@ -77,17 +102,37 @@ const ViewMessages = () => {
               ))
             )}
           </div>
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer"
+            >
+              Previous
+            </button>
+            <span className="mx-4">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
           <div>
             <button
               onClick={handleBack}
-              className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer">
+              className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer"
+            >
               Back <ArrowBigLeft size="18px" />
             </button>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ViewMessages
+export default ViewMessages;
