@@ -6,23 +6,27 @@ import { useNavigate } from 'react-router-dom'
 
 const ViewMessages = () => {
   const navigate = useNavigate()
-
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const messagesPerPage = 6 // Set the number of messages to display per page
 
   useEffect(() => {
-    axios
-      .get('http://localhost:8000/api/v1/viewMessages/')
-      .then((response) => {
+    const fetchMessages = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8000/api/v1/viewMessages/?page=${currentPage}`)
         setMessages(response.data.messages)
-      })
-      .catch((error) => {
+        setTotalPages(Math.ceil(response.data.totalMessages / messagesPerPage))
+      } catch (error) {
         console.error('Error fetching messages:', error)
-      })
-      .finally(() => {
+      } finally {
         setLoading(false)
-      })
-  }, [])
+      }
+    }
+
+    fetchMessages()
+  }, [currentPage])
 
   const handleBack = () => {
     navigate('/admin')
@@ -31,6 +35,10 @@ const ViewMessages = () => {
   const handleViewClick = (id) => {
     navigate(`/sent-messages/${id}`)
   }
+
+  const indexOfLastMessage = currentPage * messagesPerPage
+  const indexOfFirstMessage = indexOfLastMessage - messagesPerPage
+  const currentMessages = messages.slice(indexOfFirstMessage, indexOfLastMessage)
 
   return (
     <div className="h-screen w-full font-poppins">
@@ -48,7 +56,7 @@ const ViewMessages = () => {
             </label>
             <div className="flex w-full justify-between gap-2">
               <input type="search" name="search_filter" id="search_filter" className="w-full font-poppins border-2 border-accent rounded-[8px] p-2 my-2" placeholder="Search for a Template" />
-              <button className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-2 my-2  font-medium font-poppins hover:cursor-pointer">
+              <button className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-2 my-2 font-medium font-poppins hover:cursor-pointer">
                 Filter <SlidersHorizontal size="18px" />
               </button>
             </div>
@@ -61,10 +69,10 @@ const ViewMessages = () => {
             </div>
             {loading ? (
               <div>Loading...</div>
-            ) : messages?.length == 0 ? (
+            ) : currentMessages?.length === 0 ? (
               <p className="font-medium px-2 text-xl mt-1">No Messages Found</p>
             ) : (
-              messages?.map((message) => (
+              currentMessages?.map((message) => (
                 <div key={message.reference_id} className="flex justify-between items-center bg-primary text-white rounded-[8px] p-3">
                   <p className="m-0 w-1/3 truncate">{message.template_name}</p>
                   <div className="w-1/2 flex justify-between items-center">
@@ -76,6 +84,23 @@ const ViewMessages = () => {
                 </div>
               ))
             )}
+          </div>
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer">
+              Previous
+            </button>
+            <span className="mx-4">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer">
+              Next
+            </button>
           </div>
           <div>
             <button

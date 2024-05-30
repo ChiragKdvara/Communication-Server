@@ -9,6 +9,8 @@ const Upload = () => {
   const [selectedFileName, setSelectedFileName] = useState(null)
   const [uploadStatus, setUploadStatus] = useState(null)
   const [uploadStep, setUploadStep] = useState(1) // 1 for branch upload, 2 for user upload
+  const [isUploading, setIsUploading] = useState(false)
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false) // New state for loading screen
 
   const handleBack = () => {
     navigate('/admin')
@@ -75,8 +77,54 @@ const Upload = () => {
     link.click()
   }
 
+  const validateStructure = (jsonData, uploadStep) => {
+    if (uploadStep === 1) {
+      // Validate the structure for branch data
+      const hasHierarchy = Array.isArray(jsonData.hierarchy) && jsonData.hierarchy.every((item) => typeof item === 'string')
+      const hasData =
+        Array.isArray(jsonData.data) &&
+        jsonData.data.every((item) => typeof item.region === 'string' && typeof item.zone === 'string' && typeof item.cluster === 'string' && typeof item.branch === 'string')
+
+      return hasHierarchy && hasData
+    } else if (uploadStep === 2) {
+      // Validate the structure for user data
+      const hasUsers =
+        Array.isArray(jsonData.users) &&
+        jsonData.users.every((user) => typeof user.username === 'string' && typeof user.email === 'string' && typeof user.role === 'string' && typeof user.btm_lvl_id === 'number')
+
+      return hasUsers
+    }
+
+    return false // Invalid uploadStep
+  }
+
+  const checkForNullOrEmpty = (jsonData, uploadStep) => {
+    if (uploadStep === 1) {
+      // Check for null or empty values in branch data
+      const { data } = jsonData
+      for (const item of data) {
+        if (Object.values(item).some((value) => value === null || value === '')) {
+          return true // Found null or empty value
+        }
+      }
+    } else if (uploadStep === 2) {
+      // Check for null or empty values in user data
+      const { users } = jsonData
+      for (const user of users) {
+        if (Object.values(user).some((value) => value === null || value === '')) {
+          return true // Found null or empty value
+        }
+      }
+    }
+
+    return false // No null or empty values found
+  }
+
   const uploadData = async () => {
     if (selectedFile) {
+      setShowLoadingScreen(true) // Set showLoadingScreen to true before starting the upload
+      setIsUploading(true) // Set isUploading to true before starting the upload
+
       const reader = new FileReader()
 
       reader.onload = async (event) => {
@@ -84,6 +132,21 @@ const Upload = () => {
           const content = event.target.result
           const jsonData = JSON.parse(content)
 
+          // Validate the structure of the JSON data
+          const isValidStructure = validateStructure(jsonData, uploadStep)
+          if (!isValidStructure) {
+            setUploadStatus('Error: Invalid file structure. Please check the file and try again.')
+            return
+          }
+
+          // Validate for null or empty values
+          const hasNullOrEmpty = checkForNullOrEmpty(jsonData, uploadStep)
+          if (hasNullOrEmpty) {
+            setUploadStatus('Error: File contains null or empty values. Please fix and try again.')
+            return
+          }
+
+          // If the structure and values are valid, proceed with the upload
           let endpoint
           if (uploadStep === 1) {
             endpoint = 'http://localhost:8000/api/v1/hierarchy/upload-hierarchy-data'
@@ -109,12 +172,16 @@ const Upload = () => {
         } catch (error) {
           console.error('Error during upload:', error)
           setUploadStatus(`Error during upload., ${error?.response?.data?.message ? error?.response?.data?.message : error}`)
+        } finally {
+          setIsUploading(false) // Set isUploading to false after the upload completes
+          setShowLoadingScreen(false) // Set showLoadingScreen to false after the upload completes
         }
       }
 
       reader.readAsText(selectedFile)
     } else {
       console.warn('No file selected.')
+      setIsUploading(false) // Set isUploading to false if no file is selected
     }
 
     setSelectedFile(null)
@@ -123,6 +190,11 @@ const Upload = () => {
 
   return (
     <div className="h-screen w-full font-poppins">
+      {showLoadingScreen && (
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="text-3xl font-bold text-white">Uploading Your File...</div>
+        </div>
+      )}
       <Header />
       <div className="bg-primary w-full h-20 flex items-center justify-between">
         <h1 className="m-0 p-4 text-white font-semibold">Upload</h1>
@@ -156,6 +228,11 @@ const Upload = () => {
               </div>
             )}
             {uploadStatus && <p className="text-lg font-bold mt-4 text-center absolute bottom-[-4rem] left-0 right-0">{uploadStatus}</p>}
+            {isUploading && (
+              <div className="absolute bottom-[-4rem] left-0right-0 text-center">
+                <p className="text-lg font-bold">Uploading your files...</p>
+              </div>
+            )}
           </div>
           <div className="flex justify-start mt-20">
             <button
@@ -190,5 +267,4 @@ const Upload = () => {
     </div>
   )
 }
-
 export default Upload
