@@ -46,8 +46,8 @@ const AdminDashboard = () => {
   }
 
   const onTemplateUseClick = (templateData) => {
-    navigate('/select-filter', {
-      state: { ...templateData, previousPage: '/admin' }, // Set the previous page
+    navigate(`/template/${templateData.template_id}`, {
+      state: { ...templateData, previousPage: '/admin' }, // Set the previous page and pass the template data
     })
   }
 

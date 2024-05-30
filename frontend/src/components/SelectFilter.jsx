@@ -65,6 +65,7 @@ const SelectFilter = () => {
     // Navigate back to the previous page dynamically
     navigate(location?.state?.previousPage, {
       state: {
+        template_id: passedState?.template_id,
         template_name: passedState?.template_name,
         message_title: passedState?.message_title,
         message_content: passedState?.message_content,

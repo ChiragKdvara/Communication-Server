@@ -155,7 +155,7 @@ const Preview = () => {
         </button>
       </div>
 
-      <Modal isOpen={isModalOpen} onRequestClose={closeModal} contentLabel="Confirm Send" className="w-full h-screen flex flex-col items-center justify-center glass">
+      <Modal isOpen={isModalOpen} onRequestClose={closeModal} contentLabel="Confirm Send" className="w-full h-screen flex flex-col items-center justify-center glass" ariaHideApp={false}>
         <div className="flex flex-col items-center justify-center text-center">
           <h2 className="font-bold font-poppins mb-1">Confirm Send</h2>
           <p className="font-poppins">You are about to send a message to {userCount} user(s). Are you sure you want to continue?</p>

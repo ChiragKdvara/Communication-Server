@@ -12,6 +12,7 @@ const Message = lazy(() => import('./components/Message'))
 const ViewMessages = lazy(() => import('./components/ViewMessages'))
 const ViewSingleMessage = lazy(() => import('./components/ViewSingleMessage'))
 const MessageDetails = lazy(() => import('./components/MessageDetails'))
+const TemplateReuse = lazy(() => import('./components/TemplateReuse'))
 
 const App = () => {
   return (
@@ -28,6 +29,7 @@ const App = () => {
         <Route path="/sent-messages" element={<ViewMessages />} />
         <Route path="/sent-messages/:id" element={<ViewSingleMessage />} />
         <Route path="/message-details/:id" element={<MessageDetails />} />
+        <Route path="/template/:id" element={<TemplateReuse />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </Suspense>

@@ -169,17 +169,19 @@ const Upload = () => {
         <div className="w-1/2 p-4 pl-[4rem] pt-[4rem]">
           <h2 className="text-md font-semibold mb-2">Instructions</h2>
           <h3 className="text-lg font-semibold mb-1">File Upload:</h3>
-          <p>Click on the `&quote;`Upload`&quot;` button or Drag and Drop the file to be uploaded.</p>
+          <p>
+            Click on the <span className="text-secondary font-bold">Upload</span> button or Drag and Drop the file to be uploaded.
+          </p>
           <h3 className="text-lg font-semibold mb-1">Supported File Formats:</h3>
           <p>Ensure that the file you are uploading is of JSON format.</p>
           <h3 className="text-lg font-semibold mb-1">
-            <a href="#" onClick={downloadBranchDataStructure} className="text-saddlebrown no-underline">
-              Download Branch - Data Structure
+            <a href="#" onClick={downloadBranchDataStructure} className="text-secondary font-bold">
+              Download Branch Structure
             </a>
           </h3>
           <h3 className="text-lg font-semibold mb-1">
-            <a href="#" onClick={downloadUserDataStructure} className="text-saddlebrown no-underline">
-              Download User - Data Structure
+            <a href="#" onClick={downloadUserDataStructure} className="text-secondary font-bold">
+              Download User Structure
             </a>
           </h3>
           <p>Use the downloaded file structure as a reference to ensure that the file you are preparing for upload follows the same format and structure.</p>
