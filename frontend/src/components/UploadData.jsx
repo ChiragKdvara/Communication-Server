@@ -4,6 +4,7 @@ import Header from './Header'
 import axios from 'axios'
 
 const Upload = () => {
+  const BASE_URL = import.meta.env.VITE_URL
   const navigate = useNavigate()
   const [selectedFile, setSelectedFile] = useState(null)
   const [selectedFileName, setSelectedFileName] = useState(null)
@@ -149,9 +150,9 @@ const Upload = () => {
           // If the structure and values are valid, proceed with the upload
           let endpoint
           if (uploadStep === 1) {
-            endpoint = 'http://localhost:8000/api/v1/hierarchy/upload-hierarchy-data'
+            endpoint = `${BASE_URL}/api/v1/hierarchy/upload-hierarchy-data`
           } else if (uploadStep === 2) {
-            endpoint = 'http://localhost:8000/api/v1/users/add-users'
+            endpoint = `${BASE_URL}/api/v1/users/add-users`
           }
 
           const response = await axios.post(endpoint, jsonData, {

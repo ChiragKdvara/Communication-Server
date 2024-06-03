@@ -5,6 +5,7 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
 const ViewMessages = () => {
+  const BASE_URL = import.meta.env.VITE_URL
   const navigate = useNavigate()
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
@@ -15,9 +16,9 @@ const ViewMessages = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/v1/viewMessages/?page=${currentPage}`)
+        const response = await axios.get(`${BASE_URL}/api/v1/viewMessages/`)
         setMessages(response.data.messages)
-        setTotalPages(Math.ceil(response.data.totalMessages / messagesPerPage))
+        setTotalPages(Math.ceil(response.data.messages.length / messagesPerPage))
       } catch (error) {
         console.error('Error fetching messages:', error)
       } finally {
@@ -26,7 +27,7 @@ const ViewMessages = () => {
     }
 
     fetchMessages()
-  }, [currentPage])
+  }, [BASE_URL, currentPage])
 
   const handleBack = () => {
     navigate('/admin')

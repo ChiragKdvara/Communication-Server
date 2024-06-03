@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, select, DateTime
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError,NoSuchTableError
 import logging
 from datetime import datetime
 
@@ -87,9 +87,19 @@ async def get_templates(limit: int = Query(10, ge=1, le=100)):
     try:
         Session = sessionmaker(bind=engine)
         session = Session()
-        templates = Table("templates", metadata, autoload_with=engine)
-        result = session.execute(select(templates).limit(limit)).fetchall()
+        templates_table = None
+
+        try:
+            templates_table = Table("templates", metadata, autoload_with=engine)
+        except NoSuchTableError:
+            raise HTTPException(status_code=404, detail="No Templates Found")
+
+        result = session.execute(select(templates_table).limit(limit)).fetchall()
         session.close()
+
+        if not result:
+            raise HTTPException(status_code=404, detail="No Templates Found")
+
         return result
     except SQLAlchemyError as e:
         logging.error(e)

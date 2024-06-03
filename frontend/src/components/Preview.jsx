@@ -1,11 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import Modal from 'react-modal'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './Header'
 import { ArrowBigLeft, CircleCheckBig, CircleX, Send } from 'lucide-react'
 
 const Preview = () => {
+  const BASE_URL = import.meta.env.VITE_URL
   const location = useLocation()
   const navigate = useNavigate()
   const data = location?.state
@@ -13,6 +14,28 @@ const Preview = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false) // State to control modal visibility
   const [userCount, setUserCount] = useState(0) // State to hold the user count
+  const [isLoading, setIsLoading] = useState(true) // State to control loading
+
+  useEffect(() => {
+    const fetchUserCount = async () => {
+      try {
+        setIsLoading(true) // Set loading to true before API call
+        const response = await axios.get(`${BASE_URL}/api/v1/users/user_filter`, {
+          params: {
+            btm_lvl_name: data.selected_branch, // Pass branch name as query parameter
+          },
+        })
+
+        setUserCount(response.data.users.length) // Set the user count
+      } catch (error) {
+        console.error('Error fetching user count:', error) // Handle error
+      } finally {
+        setIsLoading(false) // Set loading to false after API call
+      }
+    }
+
+    fetchUserCount()
+  }, [BASE_URL, data.selected_branch])
 
   const handleBack = () => {
     // Navigate back to `SelectFilter`, passing the current state
@@ -28,20 +51,7 @@ const Preview = () => {
   }
 
   const openModal = async () => {
-    try {
-      console.log(data)
-      // Call API endpoint to get user count for the selected branch
-      const response = await axios.get(`http://localhost:8000/api/v1/users/user_filter`, {
-        params: {
-          btm_lvl_name: data.selected_branch, // Pass branch name as query parameter
-        },
-      })
-
-      setUserCount(response.data.users.length) // Set the user count
-      setIsModalOpen(true) // Open the modal
-    } catch (error) {
-      console.error('Error fetching user count:', error) // Handle error
-    }
+    setIsModalOpen(true) // Open the modal
   }
 
   const closeModal = () => {
@@ -55,7 +65,7 @@ const Preview = () => {
         closeModal()
         return
       } else {
-        const response = await axios.post('http://localhost:8000/api/v1/expMessages/', {
+        const response = await axios.post(`${BASE_URL}/api/v1/expMessages/`, {
           template_name: data.template_name,
           message_title: data.message_title,
           message_content: data.message_content,
@@ -110,6 +120,10 @@ const Preview = () => {
               <p>
                 <span className="font-bold">Message Title:</span> {data.message_title}
               </p>
+              <p className="font-poppins">
+                <span className="font-bold">Number of Target Users:</span> {isLoading ? 'Loading...' : userCount}
+              </p>
+
               <p>
                 <span className="font-bold">Message Content:</span> {data.message_content}
               </p>

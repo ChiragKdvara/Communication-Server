@@ -3,15 +3,16 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const Login = () => {
-  const [email, setEmail] = useState('') // Email state
+  const BASE_URL = import.meta.env.VITE_URL
+  const [username, setUsername] = useState('') // Username state
   const navigate = useNavigate() // For navigation
 
   const handleLogin = async (e) => {
     e.preventDefault() // Prevent default form submission
 
     try {
-      const response = await axios.post('http://localhost:8000/api/v1/users/login', {
-        email, // Send email to the FastAPI endpoint
+      const response = await axios.post(`${BASE_URL}/api/v1/users/login`, {
+        username, // Send email to the FastAPI endpoint
       })
 
       const user_data = response.data // Get the user data from the response
@@ -30,12 +31,12 @@ const Login = () => {
     <div className="flex flex-col items-center justify-center">
       <h1 className="text-2xl font-bold font-space">Login</h1>
       <form onSubmit={handleLogin} className="flex flex-col w-96">
-        <label htmlFor="email">Email:</label>
+        <label htmlFor="username">Username:</label>
         <input
-          type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)} // Capture email input
+          type="text"
+          id="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)} // Capture email input
           required
           className="border-2 border-accent rounded-md p-2 font-poppins"
         />
