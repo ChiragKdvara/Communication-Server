@@ -37,7 +37,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const validateData = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/v1/validate`)
+        const response = await axios.get(`${BASE_URL}/api/v1/validate/`)
         setValidationResult(response.data)
       } catch (error) {
         console.error('Error validating data:', error)
@@ -48,16 +48,20 @@ const AdminDashboard = () => {
     validateData()
   }, [BASE_URL])
 
-  const onCreateTemplateClick = () => {
-    navigate('/create-template', {
-      state: {
-        template_name: '',
-        message_title: '',
-        message_content: '',
-        selected_branch: '',
-        previousPage: '/admin', // Set the previous page
-      },
-    })
+  const onSendMessageClick = () => {
+    if (templates.length == 0) {
+      navigate('/create-template', {
+        state: {
+          template_name: '',
+          message_title: '',
+          message_content: '',
+          selected_branch: '',
+          previousPage: '/admin', // Set the previous page
+        },
+      })
+    } else {
+      navigate('/templates')
+    }
   }
 
   const onViewMessageClick = () => {
@@ -140,7 +144,7 @@ const AdminDashboard = () => {
         <button
           disabled={!validationResult}
           className="bg-secondary flex gap-2 items-center text-white rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer disabled:cursor-not-allowed"
-          onClick={onCreateTemplateClick}>
+          onClick={onSendMessageClick}>
           Send Message <Send size="18px" />
         </button>
         <button
