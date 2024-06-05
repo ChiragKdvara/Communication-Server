@@ -86,12 +86,12 @@ const ViewMessages = () => {
               ))
             )}
           </div>
-          <div className="flex justify-center mt-4">
+          <div className="flex items-center justify-center mt-4">
             <button
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
-              className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer">
-              Previous
+              className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] px-2 py-1 font-medium font-poppins hover:cursor-pointer">
+              Prev
             </button>
             <span className="mx-4">
               Page {currentPage} of {totalPages}
@@ -99,7 +99,7 @@ const ViewMessages = () => {
             <button
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer">
+              className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] px-2 py-1 font-medium font-poppins hover:cursor-pointer">
               Next
             </button>
           </div>
