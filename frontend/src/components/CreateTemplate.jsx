@@ -78,9 +78,10 @@ const CreateTemplate = () => {
       message_title: '',
       message_content: '',
     })
-    navigate('/admin', {
+    navigate(location?.state?.previousPage, {
       state: {
         ...templateData,
+        previousPage: 'create-template',
       },
     })
   }
