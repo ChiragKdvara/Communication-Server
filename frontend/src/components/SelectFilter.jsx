@@ -48,7 +48,7 @@ const SelectFilter = () => {
   useEffect(() => {
     const validateData = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/v1/validate`)
+        const response = await axios.get(`${BASE_URL}/api/v1/validate/`)
         setValidationResult(response.data)
       } catch (error) {
         console.error('Error validating data:', error)
