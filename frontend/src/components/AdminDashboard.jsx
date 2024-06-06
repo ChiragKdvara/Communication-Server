@@ -6,39 +6,65 @@ import Sidebar from './Sidebar'
 import { LayoutPanelTop, MessageSquareShare, Send, TrendingUp } from 'lucide-react'
 
 const AdminDashboard = () => {
+  const BASE_URL = import.meta.env.VITE_URL
+
   const navigate = useNavigate()
   const [templates, setTemplates] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [validationResult, setValidationResult] = useState(null)
+  const [validationLoading, setValidationLoading] = useState(true)
 
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/v1/templates/', {
+        const response = await axios.get(`${BASE_URL}/api/v1/templates/`, {
           params: { limit: 5 },
         })
-        setTemplates(response.data)
+        const data = Array.isArray(response.data) ? response.data : []
+        console.log('API Response:', data) // Debugging line
+        setTemplates(data)
       } catch (error) {
         console.error('Error fetching templates:', error)
-        setError('Failed to fetch templates')
+        setError('No Templates Found')
       } finally {
         setLoading(false)
       }
     }
 
     fetchTemplates()
-  }, [])
+  }, [BASE_URL])
 
-  const onCreateTemplateClick = () => {
-    navigate('/create-template', {
-      state: {
-        template_name: '',
-        message_title: '',
-        message_content: '',
-        selected_branch: '',
-        previousPage: '/admin', // Set the previous page
-      },
-    })
+  useEffect(() => {
+    const validateData = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/v1/validate/`)
+        setValidationResult(response.data)
+      } catch (error) {
+        console.error('Error validating data:', error)
+        setValidationResult(false)
+      } finally {
+        setValidationLoading(false)
+      }
+    }
+
+    validateData()
+  }, [BASE_URL])
+
+  const onSendMessageClick = () => {
+    if (templates.length == 0) {
+      navigate('/create-template', {
+        state: {
+          template_name: '',
+          message_title: '',
+          message_content: '',
+          selected_branch: '',
+          previousPage: '/admin', // Set the previous page
+        },
+      })
+    } else {
+      navigate('/templates')
+    }
   }
 
   const onViewMessageClick = () => {
@@ -46,9 +72,13 @@ const AdminDashboard = () => {
   }
 
   const onTemplateUseClick = (templateData) => {
-    navigate('/select-filter', {
-      state: { ...templateData, previousPage: '/admin' }, // Set the previous page
+    navigate(`/template/${templateData.template_id}`, {
+      state: { ...templateData, previousPage: '/admin' }, // Set the previous page and pass the template data
     })
+  }
+
+  const handleUploadLinkClick = () => {
+    navigate('/upload')
   }
 
   return (
@@ -88,7 +118,6 @@ const AdminDashboard = () => {
           </h2>
           <div className="flex">
             <div className="rounded-[8px] w-full">
-              {/* Display Templates Start */}
               {loading ? (
                 <p className="m-0 font-medium">
                   Loading templates<span className="animate-pulse">...</span>
@@ -98,35 +127,46 @@ const AdminDashboard = () => {
               ) : templates.length === 0 ? (
                 <p className="m-0 font-medium">No templates found</p>
               ) : (
-                templates.map((template) => (
-                  <div key={template.template_id} className="flex items-center justify-between text-white px-4 bg-primary mb-2 rounded-[8px]">
+                templates?.map((template) => (
+                  <div disabled={!validationResult} key={template.template_id} className="flex items-center justify-between text-white px-4 bg-primary mb-2 rounded-[8px] disabled:cursor-not-allowed">
                     <p>{template.template_name}</p>
-                    <a className="text-secondary cursor-pointer font-medium underline underline-offset-2" onClick={() => onTemplateUseClick(template)}>
+                    <a
+                      disabled={!validationResult}
+                      className="text-secondary cursor-pointer font-medium underline underline-offset-2 disabled:cursor-not-allowed"
+                      onClick={() => onTemplateUseClick(template)}>
                       Use Template
                     </a>
                   </div>
                 ))
               )}
-              {/* Display Templates End */}
             </div>
           </div>
         </div>
-        {/* Template End */}
       </div>
-      {/* Stats and Template End */}
-
-      {/* Actions Start */}
       <div className="flex p-4 gap-3">
-        <button className="bg-secondary flex gap-2 items-center text-white rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer" onClick={onCreateTemplateClick}>
+        <button
+          disabled={!validationResult}
+          className="bg-secondary flex gap-2 items-center text-white rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer disabled:cursor-not-allowed"
+          onClick={onSendMessageClick}>
           Send Message <Send size="18px" />
         </button>
         <button
-          className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer"
+          disabled={!validationResult}
+          className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer disabled:cursor-not-allowed"
           onClick={onViewMessageClick}>
           View Messages <MessageSquareShare size="18px" />
         </button>
       </div>
-      {/* Actions End */}
+      {!validationLoading && !validationResult && (
+        <div className="px-4">
+          <p className="font-medium">
+            <span onClick={handleUploadLinkClick} className="text-primary underline hover:cursor-pointer">
+              Click Here
+            </span>{' '}
+            to Upload Data to be able to Send Messages...
+          </p>
+        </div>
+      )}
     </div>
   )
 }

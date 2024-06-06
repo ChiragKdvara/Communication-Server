@@ -5,6 +5,7 @@ from api.user_router import router as user_router
 from api.template_router import router as template_router
 from api.exp_messages import router as exp_messages
 from api.view_messages import router as view_messages
+from api.validate_router import router as validate_router
 app = FastAPI()
 
 app.add_middleware(
@@ -21,3 +22,4 @@ app.include_router(user_router,prefix='/api/v1/users')
 app.include_router(template_router,prefix='/api/v1/templates')
 app.include_router(exp_messages,prefix='/api/v1/expMessages')
 app.include_router(view_messages,prefix='/api/v1/viewMessages')
+app.include_router(validate_router,prefix='/api/v1/validate')

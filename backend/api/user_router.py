@@ -68,7 +68,7 @@ async def create_users_batch(request: Request):
         user_table = Table(
             'users', metadata,
             Column('id', Integer, primary_key=True),
-            Column('username', String(50), nullable=False),
+            Column('username', String(50), unique=True, nullable=False),
             Column('email', String(100), unique=True, nullable=False),
             Column('role', String(50), nullable=False),
             Column(bottom_most_id, Integer, ForeignKey(foreign_key_id)),  # Ensure correct foreign key
@@ -86,14 +86,16 @@ async def create_users_batch(request: Request):
 
         # Check for duplicates within the provided batch data
         seen_emails = set()
+        seen_usernames = set()
 
         for user_data in user_batch:
             try:
                 user = UserCreate(**user_data)
-                
-                # Validate the email field manually
+
+                # Validate the email and username fields manually
                 user_email = user.email
-                
+                user_username = user.username
+
                 if user_email in seen_emails:
                     errors.append({
                         "entry": user_data,
@@ -101,10 +103,19 @@ async def create_users_batch(request: Request):
                     })
                     continue
 
+                if user_username in seen_usernames:
+                    errors.append({
+                        "entry": user_data,
+                        "error": "Duplicate username within the batch"
+                    })
+                    continue
+
                 seen_emails.add(user_email)
+                seen_usernames.add(user_username)
 
                 existing_user = session.query(user_table).filter(
-                    (user_table.c.email == user.email)
+                    (user_table.c.email == user.email) |
+                    (user_table.c.username == user.username)
                 ).first()
 
                 if existing_user:
@@ -169,7 +180,7 @@ async def create_users_batch(request: Request):
 # USER LOGIN
 
 class LoginInput(BaseModel):
-    email: str
+    username: str
 
 # Login api end-point for user
 @router.post("/login")
@@ -177,10 +188,10 @@ async def check_user(data: LoginInput):
     session = Session()
 
     try:
-        # Fetch user based on email
+        # Fetch user based on username
         users_table = Table("users", metadata, autoload_with=engine)
         user = session.execute(
-            users_table.select().where(users_table.c.email == data.email)
+            users_table.select().where(users_table.c.username == data.username)
         ).fetchone()
 
         if not user:
@@ -328,59 +339,67 @@ async def get_users(
 
 
 
+
+
+
+# Helper function to convert DD-MM-YYYY to datetime
+def convert_to_datetime(date_str: str, end_of_day: bool = False) -> datetime:
+    dt = datetime.strptime(date_str, "%d-%m-%Y")
+    if end_of_day:
+        dt = dt.replace(hour=23, minute=59, second=59)
+    return dt
+
 # VIEW ALL SENT MESSAGES TO PARTICULAR USER:
-@router.get("/{user_id}")
-async def get_references(user_id: int):
+@router.get("/")
+async def get_references(username: str, start_date: str = None, end_date: str = None):
     session = Session()
 
     try:
-        # Fetch all rows from `exp_message` for the given `user_id`
+        users_table = Table("users", metadata, autoload_with=engine)
+        user = session.execute(
+            users_table.select().where(users_table.c.username == username)
+        ).fetchone()
+
+        if not user:
+            raise HTTPException(status_code=404, detail=f"No user found with username: {username}")
+
+        logging.debug(f'user: {user.id}')
+
+        # Set default date range if not provided
+        if start_date:
+            start_datetime = convert_to_datetime(start_date)
+        else:
+            start_datetime = datetime.min  # Earliest representable datetime
+
+        if end_date:
+            end_datetime = convert_to_datetime(end_date, end_of_day=True)
+        else:
+            end_datetime = datetime.max  # Latest representable datetime
+
+        # Fetch all rows from `exp_message` for the given `user_id` and within the date range
         exp_message_table = Table("exp_message", metadata, autoload_with=engine)
         exp_messages = session.execute(
-            exp_message_table.select().where(exp_message_table.c.user_id == user_id)
-        ).fetchall()
+            exp_message_table.select().where(
+                and_(
+                    exp_message_table.c.user_id == user.id,
+                    exp_message_table.c.sent_time >= start_datetime,
+                    exp_message_table.c.sent_time <= end_datetime
+                )
+            )
+        ).mappings().all()
+
+        logging.debug(f'exp_message: {exp_messages}')
 
         if not exp_messages:
-            raise HTTPException(status_code=404, detail="No messages found for this user")
-
-        # Extract the reference IDs and their `sent_time`
-        reference_ids_with_details = [(msg.id, msg.reference_id, msg.sent_time) for msg in exp_messages]
-
-        # Fetch corresponding data from `reference_table` using `reference_ids`
-        reference_table = Table("reference_table", metadata, autoload_with=engine)
-        reference_ids = [ref_id for _, ref_id, _ in reference_ids_with_details]
-        reference_data = session.execute(
-            reference_table.select().where(reference_table.c.id.in_(reference_ids))
-        ).fetchall()
-
-        # Create a dictionary to map `reference_id` to its data and `exp_message.id`
-        ref_id_to_exp_message = {ref_id: exp_msg_id for exp_msg_id, ref_id, _ in reference_ids_with_details}
-        ref_id_to_sent_time = {ref_id: sent_time for _, ref_id, sent_time in reference_ids_with_details}
-
-        # Match `reference_data` with the correct `exp_message.id` and `sent_time`
-        combined_data = []
-        for ref in reference_data:
-            ref_id = ref.id
-            if ref_id in ref_id_to_exp_message:
-                exp_msg_id = ref_id_to_exp_message[ref_id]
-                sent_time = ref_id_to_sent_time[ref_id].strftime("%d/%m/%Y %H:%M:%S")
-                combined_data.append({
-                    "exp_message_id": exp_msg_id,  # Include `exp_message.id`
-                    "message_title": ref.message_title,
-                    "sent_time": sent_time,  # Formatted `sent_time`
-                })
-
-        # Sort combined data by `sent_time` in descending order
-        combined_data.sort(key=lambda x: x['sent_time'], reverse=True)
+            raise HTTPException(status_code=404, detail="No messages found for this user within the date range")
 
         return {
-            "user_id": user_id,
-            "reference_data": combined_data,  # Return the correct sorted data
+            "exp_messages": exp_messages
         }
 
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error fetching references: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error fetching data: {str(e)}")
 
     finally:
         session.close()

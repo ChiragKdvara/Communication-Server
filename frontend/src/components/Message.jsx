@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 
 const Message = () => {
+  const BASE_URL = import.meta.env.VITE_URL
   const { id } = useParams() // Get the message_id from the URL
   const [messageData, setMessageData] = useState(null) // State to hold the fetched data
 
   useEffect(() => {
     const fetchReferenceData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/v1/users/messages/${id}`) // Fetch the data
+        const response = await axios.get(`${BASE_URL}/api/v1/users/messages/${id}`) // Fetch the data
         setMessageData(response.data) // Store the fetched data
       } catch (error) {
         console.error('Error fetching message data:', error) // Log any errors
@@ -17,7 +18,7 @@ const Message = () => {
     }
 
     fetchReferenceData() // Fetch the data when the component is mounted
-  }, [id]) // Dependency on `message_id`
+  }, [id, BASE_URL]) // Dependency on `message_id`
 
   if (!messageData) {
     return <div className="flex w-full h-screen items-center justify-center font-poppins font-bold text-10xl">Loading...</div> // Display loading message while fetching data

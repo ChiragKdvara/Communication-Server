@@ -6,6 +6,7 @@ import { ArrowBigLeft, CirclePlus, FilePlus2 } from "lucide-react";
 import axios from "axios";
 
 const CreateTemplate = () => {
+  const BASE_URL = import.meta.env.VITE_URL;
   const navigate = useNavigate();
   const { templateData, setTemplateData } = useTemplate();
   const [errors, setErrors] = useState({});
@@ -60,14 +61,11 @@ const CreateTemplate = () => {
 
     if (validateForm()) {
       try {
-        const response = await axios.post(
-          "http://localhost:8000/api/v1/templates/",
-          {
-            template_name: templateData.template_name,
-            message_title: templateData.message_title,
-            message_content: templateData.message_content,
-          }
-        );
+        const response = await axios.post(`${BASE_URL}/api/v1/templates/`, {
+          template_name: templateData.template_name,
+          message_title: templateData.message_title,
+          message_content: templateData.message_content,
+        });
 
         console.log("Template saved:", response.data);
         navigate("/select-filter", {
@@ -91,9 +89,10 @@ const CreateTemplate = () => {
       message_title: "",
       message_content: "",
     });
-    navigate("/admin", {
+    navigate(location?.state?.previousPage, {
       state: {
         ...templateData,
+        previousPage: "create-template",
       },
     });
   };

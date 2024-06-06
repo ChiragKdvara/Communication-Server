@@ -1,45 +1,62 @@
-import { ArrowBigLeft, SlidersHorizontal } from 'lucide-react'
+import { ArrowBigLeft, BookTemplate, SlidersHorizontal } from 'lucide-react'
 import Header from './Header'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
-const ViewMessages = () => {
+const ViewTemplates = () => {
   const BASE_URL = import.meta.env.VITE_URL
   const navigate = useNavigate()
-  const [messages, setMessages] = useState([])
+  const [templates, setTemplates] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const messagesPerPage = 6 // Set the number of messages to display per page
+  const templatesPerPage = 6 // Set the number of templates to display per page
 
   useEffect(() => {
-    const fetchMessages = async () => {
+    const fetchTemplates = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/v1/viewMessages/`)
-        setMessages(response.data.messages)
-        setTotalPages(Math.ceil(response.data.messages.length / messagesPerPage))
+        const response = await axios.get(`${BASE_URL}/api/v1/templates/`, {
+          params: { limit: 5 },
+        })
+        setTemplates(response.data)
+        setTotalPages(Math.ceil(response.data.length / templatesPerPage))
       } catch (error) {
-        console.error('Error fetching messages:', error)
+        console.error('Error fetching templates:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchMessages()
+    fetchTemplates()
   }, [BASE_URL, currentPage])
 
   const handleBack = () => {
     navigate('/admin')
   }
 
-  const handleViewClick = (id) => {
-    navigate(`/sent-messages/${id}`)
+  const onNewTemplateClick = () => {
+    navigate('/create-template', {
+      state: {
+        template_name: '',
+        message_title: '',
+        message_content: '',
+        selected_branch: '',
+        previousPage: '/templates', // Set the previous page
+      },
+    })
   }
 
-  const indexOfLastMessage = currentPage * messagesPerPage
-  const indexOfFirstMessage = indexOfLastMessage - messagesPerPage
-  const currentMessages = messages.slice(indexOfFirstMessage, indexOfLastMessage)
+  const onTemplateUseClick = (templateData) => {
+    navigate(`/template/${templateData.template_id}`, {
+      state: { ...templateData, previousPage: '/templates' }, // Set the previous page and pass the template data
+    })
+  }
+
+  const indexOfLastTemplate = currentPage * templatesPerPage
+  const indexOfFirstTemplate = indexOfLastTemplate - templatesPerPage
+  const currentTemplates = templates?.slice(indexOfFirstTemplate, indexOfLastTemplate)
+  console.log(indexOfLastTemplate, indexOfFirstTemplate, currentTemplates)
 
   return (
     <div className="h-screen w-full font-poppins">
@@ -65,23 +82,19 @@ const ViewMessages = () => {
           <div className="flex flex-col gap-2 w-full mb-8">
             <div className="flex justify-between items-center bg-secondary text-white rounded-[8px] p-3">
               <p className="m-0 q-1/2 px-1">Template Name</p>
-              <p className="m-0">Sent Time</p>
               <p className="m-0">Action</p>
             </div>
             {loading ? (
               <div>Loading...</div>
-            ) : currentMessages?.length === 0 ? (
-              <p className="font-medium px-2 text-xl mt-1">No Messages Found</p>
+            ) : currentTemplates?.length === 0 ? (
+              <p className="font-medium px-2 text-xl mt-1">No Templates Found</p>
             ) : (
-              currentMessages?.map((message) => (
-                <div key={message.reference_id} className="flex justify-between items-center bg-primary text-white rounded-[8px] p-3">
-                  <p className="m-0 w-1/3 truncate">{message.template_name}</p>
-                  <div className="w-1/2 flex justify-between items-center">
-                    <p className="m-0">{message.sent_time}</p>
-                    <a className="text-secondary cursor-pointer font-medium underline underline-offset-2" onClick={() => handleViewClick(message.reference_id)}>
-                      View Message
-                    </a>
-                  </div>
+              currentTemplates?.map((template) => (
+                <div key={template.template_id} className="flex justify-between items-center bg-primary text-white rounded-[8px] p-3">
+                  <p className="m-0 w-1/3 truncate">{template.template_name}</p>
+                  <a className="text-secondary cursor-pointer font-medium underline underline-offset-2 disabled:cursor-not-allowed" onClick={() => onTemplateUseClick(template)}>
+                    Use Template
+                  </a>
                 </div>
               ))
             )}
@@ -103,7 +116,12 @@ const ViewMessages = () => {
               Next
             </button>
           </div>
-          <div>
+          <div className="flex gap-4 mt-4">
+            <button
+              className="bg-secondary flex gap-2 items-center text-white rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer disabled:cursor-not-allowed"
+              onClick={onNewTemplateClick}>
+              New Template <BookTemplate size="18px" />
+            </button>
             <button
               onClick={handleBack}
               className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer">
@@ -116,4 +134,4 @@ const ViewMessages = () => {
   )
 }
 
-export default ViewMessages
+export default ViewTemplates

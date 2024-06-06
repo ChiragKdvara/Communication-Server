@@ -6,6 +6,7 @@ import { ArrowBigLeft, ChevronDown, Sparkles } from 'lucide-react'
 import axios from 'axios'
 
 const SelectFilter = () => {
+  const BASE_URL = import.meta.env.VITE_URL
   const location = useLocation()
   const navigate = useNavigate()
   const { setTemplateData } = useTemplate()
@@ -15,6 +16,8 @@ const SelectFilter = () => {
 
   const [selectedBranch, setSelectedBranch] = useState(passedState?.selected_branch || '') // Initialize with passed branch
   const [apiResponse, setApiResponse] = useState({})
+  const [validationResult, setValidationResult] = useState(null)
+  const [validationLoading, setValidationLoading] = useState(true)
 
   useEffect(() => {
     if (passedState) {
@@ -26,7 +29,7 @@ const SelectFilter = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/v1/hierarchy/lvl-values')
+        const response = await axios.get(`${BASE_URL}/api/v1/hierarchy/lvl-values`)
         setApiResponse(response.data)
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -34,7 +37,7 @@ const SelectFilter = () => {
     }
 
     fetchData()
-  }, [])
+  }, [BASE_URL])
 
   useEffect(() => {
     // Set the previous page from where the user navigated
@@ -42,6 +45,22 @@ const SelectFilter = () => {
       // setPreviousPage(location.state.previousPage)
     }
   }, [location.state])
+
+  useEffect(() => {
+    const validateData = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/v1/validate/`)
+        setValidationResult(response.data)
+      } catch (error) {
+        console.error('Error validating data:', error)
+        setValidationResult(false)
+      } finally {
+        setValidationLoading(false)
+      }
+    }
+
+    validateData()
+  }, [BASE_URL])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -65,12 +84,17 @@ const SelectFilter = () => {
     // Navigate back to the previous page dynamically
     navigate(location?.state?.previousPage, {
       state: {
+        template_id: passedState?.template_id,
         template_name: passedState?.template_name,
         message_title: passedState?.message_title,
         message_content: passedState?.message_content,
         previousPage: location?.state?.previousPage, // Set the current page as the previous page
       },
     })
+  }
+
+  const handleUploadLinkClick = () => {
+    navigate('/upload')
   }
 
   return (
@@ -130,6 +154,16 @@ const SelectFilter = () => {
             placeholder="Enter Filter Name"
             disabled
           />
+          {!validationLoading && !validationResult && (
+            <div>
+              <p className="font-medium">
+                <span onClick={handleUploadLinkClick} className="text-primary underline hover:cursor-pointer">
+                  Click Here
+                </span>{' '}
+                to Upload Data to be able to Send Messages...
+              </p>
+            </div>
+          )}
 
           <div className="flex flex-col items-start mt-2">
             <form className="flex flex-col" onSubmit={handleSubmit}>
