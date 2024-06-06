@@ -351,7 +351,7 @@ def convert_to_datetime(date_str: str, end_of_day: bool = False) -> datetime:
 
 # VIEW ALL SENT MESSAGES TO PARTICULAR USER:
 @router.get("/")
-async def get_references(username: str, start_date: str , end_date: str ):
+async def get_references(username: str, start_date: str = None, end_date: str = None):
     session = Session()
 
     try:
@@ -365,9 +365,16 @@ async def get_references(username: str, start_date: str , end_date: str ):
 
         logging.debug(f'user: {user.id}')
 
-        # Convert start_date and end_date from DD-MM-YYYY to datetime
-        start_datetime = convert_to_datetime(start_date)
-        end_datetime = convert_to_datetime(end_date, end_of_day=True)
+        # Set default date range if not provided
+        if start_date:
+            start_datetime = convert_to_datetime(start_date)
+        else:
+            start_datetime = datetime.min  # Earliest representable datetime
+
+        if end_date:
+            end_datetime = convert_to_datetime(end_date, end_of_day=True)
+        else:
+            end_datetime = datetime.max  # Latest representable datetime
 
         # Fetch all rows from `exp_message` for the given `user_id` and within the date range
         exp_message_table = Table("exp_message", metadata, autoload_with=engine)
@@ -396,4 +403,3 @@ async def get_references(username: str, start_date: str , end_date: str ):
 
     finally:
         session.close()
-
