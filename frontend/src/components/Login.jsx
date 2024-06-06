@@ -12,7 +12,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(`${BASE_URL}/api/v1/users/login`, {
-        username, // Send email to the FastAPI endpoint
+        username, // Send username to the FastAPI endpoint
       })
 
       const user_data = response.data // Get the user data from the response
