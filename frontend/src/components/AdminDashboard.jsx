@@ -13,6 +13,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [validationResult, setValidationResult] = useState(null)
+  const [validationLoading, setValidationLoading] = useState(true)
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -42,6 +43,8 @@ const AdminDashboard = () => {
       } catch (error) {
         console.error('Error validating data:', error)
         setValidationResult(false)
+      } finally {
+        setValidationLoading(false)
       }
     }
 
@@ -154,7 +157,7 @@ const AdminDashboard = () => {
           View Messages <MessageSquareShare size="18px" />
         </button>
       </div>
-      {!validationResult && (
+      {!validationLoading && !validationResult && (
         <div className="px-4">
           <p className="font-medium">
             <span onClick={handleUploadLinkClick} className="text-primary underline hover:cursor-pointer">
