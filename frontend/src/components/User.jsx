@@ -13,7 +13,7 @@ const User = () => {
   useEffect(() => {
     const fetchReferenceData = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/v1/users/${user_data.username}`)
+        const response = await axios.get(`${BASE_URL}/api/v1/users?username=${user_data.username}`)
         let data = response.data.exp_messages
         console.log(data)
         setExpMsgData(data)
