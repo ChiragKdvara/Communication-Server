@@ -126,7 +126,7 @@ const ViewSingleMessage = () => {
             <div className="flex gap-4 items-center justify-between w-full">
               <div className="flex flex-col gap-2 w-1/3">
                 <p className="text-start m-0 bg-primary flex items-center justify-between text-[14px] font-bold text-white font-poppins rounded-[8px] p-2">
-                  <span className="font-medium">View Percentage</span> <span>66%</span>
+                  <span className="font-medium">View Percentage</span> <span>{referenceDetails ? referenceDetails.read_status_percentage + '%' : 'Loading...'}</span>
                 </p>
               </div>
               <div className="flex flex-col gap-2 w-1/3">
@@ -196,14 +196,14 @@ const ViewSingleMessage = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <button
-                className="w-fit flex items-center justify-between font-medium font-poppins  gap-2 p-2 my-2 bg-transparent border-accent border-solid border-2 rounded-[8px] hover:cursor-pointer"
+                className="w-fit flex items-center justify-between font-medium font-poppins gap-2 p-2 my-2 bg-transparent border-accent border-solid border-2 rounded-[8px] hover:cursor-pointer"
                 onClick={handleSearch}>
                 Search <Search size="16px" />
               </button>
             </div>
             {/* User Print */}
-            <div className="w-full">
-              {searchPerformed && !searching && filteredUsers.length === 0 && <p>No users found</p>}
+            <div className="w-full overflow-y-auto max-h-60">
+              {searchPerformed && !searching && filteredUsers.length === 0 && <p className="m-0">No users found</p>}
               {!searching &&
                 filteredUsers.map((user) => (
                   <div key={user.exp_message_id} className="flex items-center justify-between">
@@ -218,14 +218,16 @@ const ViewSingleMessage = () => {
                   </div>
                 ))}
             </div>
+            {/* Search End */}
+            <div className="flex mt-2 justify-between">
+              <button
+                onClick={handleBack}
+                className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer">
+                Back <ArrowBigLeft size="18px" />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      {/* Search End */}
-      <div className="px-4 flex justify-between">
-        <button onClick={handleBack} className="border-accent border-2 border-solid flex gap-2 items-center bg-transparent rounded-[8px] text-[16px] p-3 font-medium font-poppins hover:cursor-pointer">
-          Back <ArrowBigLeft size="18px" />
-        </button>
       </div>
     </div>
   )
