@@ -17,6 +17,7 @@ const SelectFilter = () => {
   const [selectedBranch, setSelectedBranch] = useState(passedState?.selected_branch || '') // Initialize with passed branch
   const [apiResponse, setApiResponse] = useState({})
   const [validationResult, setValidationResult] = useState(null)
+  const [validationLoading, setValidationLoading] = useState(true)
 
   useEffect(() => {
     if (passedState) {
@@ -53,6 +54,8 @@ const SelectFilter = () => {
       } catch (error) {
         console.error('Error validating data:', error)
         setValidationResult(false)
+      } finally {
+        setValidationLoading(false)
       }
     }
 
@@ -151,13 +154,13 @@ const SelectFilter = () => {
             placeholder="Enter Filter Name"
             disabled
           />
-          {!validationResult && (
+          {!validationLoading && !validationResult && (
             <div>
               <p className="font-medium">
                 <span onClick={handleUploadLinkClick} className="text-primary underline hover:cursor-pointer">
                   Click Here
                 </span>{' '}
-                to Upload Data to be able to Select Filter...
+                to Upload Data to be able to Send Messages...
               </p>
             </div>
           )}
