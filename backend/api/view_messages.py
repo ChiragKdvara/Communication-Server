@@ -143,6 +143,25 @@ async def get_reference_details(id: int):
             for idx, column_name in enumerate(column_names):
                 reference_dict[column_name] = reference_details[idx]
 
+            # Fetch messages for the given reference ID
+            message_query = text(
+                f"""
+                SELECT read_status FROM {exp_message_table.name}
+                WHERE {exp_message_table.c.reference_id} = :id
+                """
+            )
+
+            messages = session.execute(message_query, {"id": id}).fetchall()
+
+            # Calculate read status percentage
+            total_messages = len(messages)
+            read_messages = sum(1 for message in messages if message.read_status=='read')
+            read_percentage = round((read_messages / total_messages) * 100, 2) if total_messages > 0 else 0
+
+
+            # Add read_status_percentage to reference_dict
+            reference_dict["read_status_percentage"] = read_percentage
+
             # Find bottom most level
             relationships = find_relationships(engine)
             btm_lvl = find_bottom_most_level(relationships)
@@ -152,10 +171,10 @@ async def get_reference_details(id: int):
 
             # Replace "branch_name" with btm_lvl_name
             reference_dict["btm_lvl"] = reference_dict.pop(btm_lvl_name, None)
-            users=user_filtering(reference_dict["btm_lvl"])
+            users = user_filtering(reference_dict["btm_lvl"])
 
             # Return the reference details
-            return {"reference_data":reference_dict},users
+            return {"reference_data": reference_dict}, users
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching reference details: {str(e)}")
