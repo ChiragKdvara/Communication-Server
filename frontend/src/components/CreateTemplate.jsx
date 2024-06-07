@@ -64,7 +64,11 @@ const CreateTemplate = () => {
         navigate('/select-filter', {
           state: { ...templateData, previousPage: '/create-template' },
         })
-        setTemplateData({ template_name: '', message_title: '', message_content: '' })
+        setTemplateData({
+          template_name: '',
+          message_title: '',
+          message_content: '',
+        })
       } catch (error) {
         setErrors({ unique_temp_name_error: error.response.data.detail })
         console.error('Error saving template:', error)
@@ -153,7 +157,12 @@ const CreateTemplate = () => {
                 type="text"
                 id="temp_name"
                 value={templateData.template_name}
-                onChange={(e) => setTemplateData({ ...templateData, template_name: e.target.value })}
+                onChange={(e) =>
+                  setTemplateData({
+                    ...templateData,
+                    template_name: e.target.value,
+                  })
+                }
                 className={`border-accent border-2 border-solid rounded-[8px] p-2  font-medium  font-poppins
                   ${errors.template_name ? 'border-red-500' : 'border-accent'}`}
               />
@@ -162,7 +171,12 @@ const CreateTemplate = () => {
                 type="text"
                 id="msg_title"
                 value={templateData.message_title}
-                onChange={(e) => setTemplateData({ ...templateData, message_title: e.target.value })}
+                onChange={(e) =>
+                  setTemplateData({
+                    ...templateData,
+                    message_title: e.target.value,
+                  })
+                }
                 className={`border-accent border-2 border-solid rounded-[8px] p-2 font-medium font-poppins
                   ${errors.message_title ? 'border-red-500' : 'border-accent'}`}
               />
