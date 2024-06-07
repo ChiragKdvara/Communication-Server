@@ -6,7 +6,7 @@ import Header from './Header'
 import { ArrowBigLeft, CircleCheckBig, CircleX, Send } from 'lucide-react'
 
 const Preview = () => {
-  const BASE_URL = import.meta.env.VITE_URL
+  const BASE_URL = import.meta.env.VITE_URL.startsWith('http://') ? import.meta.env.VITE_URL.replace('http://', 'https://') : import.meta.env.VITE_URL
   const location = useLocation()
   const navigate = useNavigate()
   const data = location?.state
