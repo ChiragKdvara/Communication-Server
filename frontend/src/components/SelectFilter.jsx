@@ -6,7 +6,7 @@ import { ArrowBigLeft, ChevronDown, Sparkles } from 'lucide-react'
 import axios from 'axios'
 
 const SelectFilter = () => {
-  const BASE_URL = import.meta.env.VITE_URL
+  const BASE_URL = import.meta.env.VITE_URL.startsWith('http://') ? import.meta.env.VITE_URL.replace('http://', 'https://') : import.meta.env.VITE_URL
   const location = useLocation()
   const navigate = useNavigate()
   const { setTemplateData } = useTemplate()

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const User = () => {
-  const BASE_URL = import.meta.env.VITE_URL
+  const BASE_URL = import.meta.env.VITE_URL.startsWith('http://') ? import.meta.env.VITE_URL.replace('http://', 'https://') : import.meta.env.VITE_URL
   const location = useLocation()
   const user_data = location.state
   const navigate = useNavigate()

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 
 const Message = () => {
-  const BASE_URL = import.meta.env.VITE_URL
+  const BASE_URL = import.meta.env.VITE_URL.startsWith('http://') ? import.meta.env.VITE_URL.replace('http://', 'https://') : import.meta.env.VITE_URL
   const { id } = useParams() // Get the message_id from the URL
   const [messageData, setMessageData] = useState(null) // State to hold the fetched data
 
