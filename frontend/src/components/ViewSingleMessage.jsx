@@ -6,7 +6,9 @@ import { ArrowBigLeft, Search } from "lucide-react";
 import Fuse from "fuse.js";
 
 const ViewSingleMessage = () => {
-  const BASE_URL = import.meta.env.VITE_URL;
+  const BASE_URL = import.meta.env.VITE_URL.startsWith("http://")
+    ? import.meta.env.VITE_URL.replace("http://", "https://")
+    : import.meta.env.VITE_URL;
   const navigate = useNavigate();
   const { id } = useParams();
   const [referenceDetails, setReferenceDetails] = useState(null);
