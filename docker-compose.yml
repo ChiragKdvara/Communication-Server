@@ -1,4 +1,4 @@
-version: '3.9'
+
 services:
   ai-ml-frontend:
     image: nexus.perdix.co:8086/repository/ai-ml-frontend:comm
