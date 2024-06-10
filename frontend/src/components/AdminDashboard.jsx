@@ -6,7 +6,7 @@ import Sidebar from './Sidebar'
 import { LayoutPanelTop, MessageSquareShare, Send, TrendingUp } from 'lucide-react'
 
 const AdminDashboard = () => {
-  const BASE_URL = import.meta.env.VITE_URL.startsWith('http://') ? import.meta.env.VITE_URL.replace('http://', 'https://') : import.meta.env.VITE_URL
+  const BASE_URL = import.meta.env.VITE_URL
 
   const navigate = useNavigate()
   const [templates, setTemplates] = useState([])

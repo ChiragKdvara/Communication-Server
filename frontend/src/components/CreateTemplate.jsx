@@ -6,7 +6,7 @@ import { ArrowBigLeft, CirclePlus, FilePlus2 } from 'lucide-react'
 import axios from 'axios'
 
 const CreateTemplate = () => {
-  const BASE_URL = import.meta.env.VITE_URL.startsWith('http://') ? import.meta.env.VITE_URL.replace('http://', 'https://') : import.meta.env.VITE_URL
+  const BASE_URL = import.meta.env.VITE_URL
   const navigate = useNavigate()
   const { templateData, setTemplateData } = useTemplate()
   const [errors, setErrors] = useState({})
