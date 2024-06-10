@@ -9,6 +9,7 @@ const User = () => {
   const navigate = useNavigate()
 
   const [expMsgData, setExpMsgData] = useState([])
+  const [loading, setLoading] = useState(true) // Add loading state
 
   useEffect(() => {
     const fetchReferenceData = async () => {
@@ -19,6 +20,8 @@ const User = () => {
         setExpMsgData(data)
       } catch (error) {
         console.error('Error fetching reference data:', error)
+      } finally {
+        setLoading(false) // Set loading to false after data is fetched
       }
     }
 
@@ -33,11 +36,13 @@ const User = () => {
     <div className="flex flex-col items-center justify-center">
       <h1 className="text-2xl font-bold">Hey, {user_data.username}</h1>
 
-      {expMsgData?.length > 0 ? (
+      {loading ? ( // Show loading message while fetching data
+        <p>Loading...</p>
+      ) : expMsgData.length > 0 ? (
         <div className="w-2/3">
           <h2 className="text-xl font-semibold">Messages:</h2>
-          {expMsgData?.map((exp) => (
-            <div key={exp.exp_message_id} onClick={() => handleClick(exp.id)}>
+          {expMsgData.map((exp) => (
+            <div key={exp.id} onClick={() => handleClick(exp.id)}>
               <div className="flex justify-between bg-primary my-3 px-4 rounded-md cursor-pointer">
                 <p>{exp.msg_title}</p>
                 <p>{exp.sent_time}</p>
