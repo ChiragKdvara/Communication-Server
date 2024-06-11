@@ -78,8 +78,8 @@ const ViewSingleMessage = () => {
     }
   }
 
-  const handleUserViewMessage = (id, title, content) => {
-    navigate(`/message-details/${id}`, { state: { id, title, content } })
+  const handleUserViewMessage = (id, title, content, reference_id) => {
+    navigate(`/message-details/${id}`, { state: { id, title, content, reference_id } })
   }
 
   const handleBack = () => {
@@ -214,7 +214,9 @@ const ViewSingleMessage = () => {
                       <p>
                         {user.username} ({user.read_status})
                       </p>
-                      <p className="btn-link text-secondary font-medium font-poppins hover:cursor-pointer" onClick={() => handleUserViewMessage(user.exp_message_id, user.msg_title, user.msg_content)}>
+                      <p
+                        className="btn-link text-secondary font-medium font-poppins hover:cursor-pointer"
+                        onClick={() => handleUserViewMessage(user.exp_message_id, user.msg_title, user.msg_content, id)}>
                         View Message
                       </p>
                     </div>
