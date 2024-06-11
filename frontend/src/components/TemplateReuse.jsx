@@ -37,7 +37,7 @@ const TemplateReuse = () => {
       <div className="flex flex-col px-4 mt-4">
         {/* Message Start */}
         <div className="message border-solid border-2 border-primary rounded-[8px] overflow-hidden">
-          <div className="flex flex-col h-[400px]">
+          <div className="flex flex-col h-[410px]">
             <div className="flex mt-4 px-4">
               <button className="font-poppins my-2 mr-2 border-2 border-solid bg-transparent font-medium border-secondary text-secondary rounded-[8px] cursor-pointer">
                 English
@@ -53,7 +53,7 @@ const TemplateReuse = () => {
                 );
               })}
             </div>
-            <div className="flex-1 px-4 overflow-y-auto">
+            <div className="flex-1 px-4 overflow-y-hidden">
               <p>
                 <span className="font-bold">Template Name:</span>{" "}
                 {data.template_name}
