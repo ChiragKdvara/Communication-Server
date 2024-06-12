@@ -63,7 +63,7 @@ const ViewTemplates = () => {
       <Header />
       {/* Header */}
       <div className="bg-primary w-full h-20 flex items-center justify-between">
-        <h1 className="m-0 p-4 text-white font-semibold">Sent Messages</h1>
+        <h1 className="m-0 p-4 text-white font-semibold">Templates</h1>
       </div>
       {/* Search */}
       <div className="flex">
@@ -79,8 +79,8 @@ const ViewTemplates = () => {
               </button>
             </div>
           </div>
-          <div className="flex flex-col gap-2 w-full mb-8">
-            <div className="flex justify-between items-center bg-secondary text-white rounded-[8px] p-3">
+          <div className="flex flex-col gap-2 w-full mb-8 font-medium">
+            <div className="flex justify-between items-center border-accent border-2 border-solid text-black rounded-[8px] p-3">
               <p className="m-0 q-1/2 px-1">Template Name</p>
               <p className="m-0">Action</p>
             </div>
@@ -92,7 +92,7 @@ const ViewTemplates = () => {
               currentTemplates?.map((template) => (
                 <div key={template.template_id} className="flex justify-between items-center bg-primary text-white rounded-[8px] p-3">
                   <p className="m-0 w-1/3 truncate">{template.template_name}</p>
-                  <a className="text-secondary cursor-pointer font-medium underline underline-offset-2 disabled:cursor-not-allowed" onClick={() => onTemplateUseClick(template)}>
+                  <a className="text-white cursor-pointer font-medium underline underline-offset-2 disabled:cursor-not-allowed" onClick={() => onTemplateUseClick(template)}>
                     Use Template
                   </a>
                 </div>

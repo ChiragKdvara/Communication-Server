@@ -62,8 +62,8 @@ const ViewMessages = () => {
               </button>
             </div>
           </div>
-          <div className="flex flex-col gap-2 w-full mb-8">
-            <div className="flex justify-between items-center bg-secondary text-white rounded-[8px] p-3">
+          <div className="flex flex-col gap-2 w-full mb-8 font-medium">
+            <div className="flex justify-between items-center border-accent border-2 border-solid text-black rounded-[8px] p-3">
               <p className="m-0 q-1/2 px-1">Template Name</p>
               <p className="m-0">Sent Time</p>
               <p className="m-0">Action</p>
@@ -78,7 +78,7 @@ const ViewMessages = () => {
                   <p className="m-0 w-1/3 truncate">{message.template_name}</p>
                   <div className="w-1/2 flex justify-between items-center">
                     <p className="m-0">{message.sent_time}</p>
-                    <a className="text-secondary cursor-pointer font-medium underline underline-offset-2" onClick={() => handleViewClick(message.reference_id)}>
+                    <a className="text-white cursor-pointer font-medium underline underline-offset-2" onClick={() => handleViewClick(message.reference_id)}>
                       View Message
                     </a>
                   </div>
