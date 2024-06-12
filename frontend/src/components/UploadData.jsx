@@ -35,7 +35,7 @@ const Upload = () => {
     }
   }
 
-  const downloadBranchDataStructure = () => {
+  const downloadHierarchyDataStructure = () => {
     const branchData = {
       hierarchy: ['Region', 'Zone', 'Cluster', 'Branch'],
       data: [
@@ -53,7 +53,7 @@ const Upload = () => {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = 'branch-data-structure.json'
+    link.download = 'hierarchy-data-structure.json'
     link.click()
   }
 
@@ -253,8 +253,8 @@ const Upload = () => {
           <h3 className="text-lg font-semibold mb-1">Supported File Formats:</h3>
           <p>Ensure that the file you are uploading is of JSON format.</p>
           <h3 className="text-lg font-semibold mb-1">
-            <a href="#" onClick={downloadBranchDataStructure} className="text-secondary font-bold">
-              Download Branch Structure
+            <a href="#" onClick={downloadHierarchyDataStructure} className="text-secondary font-bold">
+              Download Hierarchy Structure
             </a>
           </h3>
           <h3 className="text-lg font-semibold mb-1">
