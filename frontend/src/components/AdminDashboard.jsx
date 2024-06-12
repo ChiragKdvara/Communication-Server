@@ -15,6 +15,9 @@ const AdminDashboard = () => {
   const [validationResult, setValidationResult] = useState(null)
   const [validationLoading, setValidationLoading] = useState(true)
 
+  const [statisticsResult, setStatisticsResult] = useState(null)
+  const [statisticsLoading, setStatisticsLoading] = useState(true)
+
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
@@ -49,6 +52,22 @@ const AdminDashboard = () => {
     }
 
     validateData()
+  }, [BASE_URL])
+
+  useEffect(() => {
+    const getStatistics = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/v1/statistics/`)
+        setStatisticsResult(response.data)
+      } catch (error) {
+        console.error('Error validating data:', error)
+        setStatisticsResult(false)
+      } finally {
+        setStatisticsLoading(false)
+      }
+    }
+
+    getStatistics()
   }, [BASE_URL])
 
   const onSendMessageClick = () => {
@@ -93,18 +112,18 @@ const AdminDashboard = () => {
         {/* Stats Start */}
         <div className="flex flex-col px-4 w-1/2 h-full">
           <h2 className="font-semibold uppercase text-secondary flex gap-2 items-center">
-            This Weeks Statistics <TrendingUp size="24px" />
+            Today&rsquo;s Statistics <TrendingUp size="24px" />
           </h2>
           <div className="flex w-full gap-5 justify-between">
             <div className="w-3/4 bg-primary rounded-[8px]"></div>
             <div className="flex flex-col w-1/4 gap-5 text-white font-medium justify-between">
               <div className="bg-primary h-1/2 rounded-[8px] text-start px-4">
-                <p>Messages Read</p>
-                <h3 className="font-bold text-29xl m-0">73.3%</h3>
+                <p>Total Users</p>
+                <h3 className="font-bold text-29xl m-0">{statisticsLoading ? 'Loading...' : statisticsResult ? statisticsResult.total_users : 'N/A'}</h3>
               </div>
               <div className="bg-primary h-1/2 rounded-[8px] text-start px-4">
-                <p>Accounts Reached</p>
-                <h3 className="font-bold text-29xl m-0">1.7k</h3>
+                <p>Total Messages Sent Today</p>
+                <h3 className="font-bold text-29xl m-0">{statisticsLoading ? 'Loading...' : statisticsResult ? statisticsResult.total_messages_today : 'N/A'}</h3>
               </div>
             </div>
           </div>
@@ -132,7 +151,7 @@ const AdminDashboard = () => {
                     <p>{template.template_name}</p>
                     <a
                       disabled={!validationResult}
-                      className="text-secondary cursor-pointer font-medium underline underline-offset-2 disabled:cursor-not-allowed"
+                      className="text-white cursor-pointer font-medium underline underline-offset-2 disabled:cursor-not-allowed"
                       onClick={() => onTemplateUseClick(template)}>
                       Use Template
                     </a>
