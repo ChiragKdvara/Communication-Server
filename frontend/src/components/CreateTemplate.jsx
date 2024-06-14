@@ -93,7 +93,7 @@ const CreateTemplate = () => {
           message_content: '',
         })
       } catch (error) {
-        // setErrors({ unique_temp_name_error: error.response.data.detail })
+        setErrors({ unique_temp_name_error: error.response.data.detail })
         console.error('Error saving template:', error)
       }
     }
