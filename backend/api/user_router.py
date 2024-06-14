@@ -1,5 +1,5 @@
 # Import necessary modules
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr, ValidationError
@@ -37,9 +37,42 @@ class UserBatchCreate(BaseModel):
     users: List[UserCreate]
 
 
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    role: str
+    btm_lvl_id: int
+
+
+class ErrorResponse(BaseModel):
+    entry: Optional[dict]
+    error: str
+
+
+class MessageResponse(BaseModel):
+    message_title: str
+    message_content: str
+    sent_time: str
+
+
+class LoginResponse(BaseModel):
+    user_id: int
+    username: str
+
+
+class UserSearchResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    read_status: str
+    msg_content: str
+    msg_title: str
+    exp_message_id: int
+
 
 # Endpoint for batch user creation
-@router.post("/add-users")
+@router.post("/add-users", tags=["Users"], response_model=dict)
 async def create_users_batch(request: Request):
     session = Session()
     errors = []
@@ -183,7 +216,7 @@ class LoginInput(BaseModel):
     username: str
 
 # Login api end-point for user
-@router.post("/login")
+@router.post("/login", tags=["Users"], response_model=LoginResponse)
 async def check_user(data: LoginInput):
     session = Session()
 
@@ -197,16 +230,9 @@ async def check_user(data: LoginInput):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-       # Fetch all reference IDs from `exp_message` for the given user ID
-        exp_message_table = Table("exp_message", metadata, autoload_with=engine)
-        exp_messages = session.execute(
-            exp_message_table.select().where(exp_message_table.c.user_id == user.id)
-        ).fetchall()  # Fetch all entries
-
-
         return {
             "user_id": user.id,
-            "username":user.username,
+            "username": user.username,
         }
 
     except Exception as e:
@@ -216,27 +242,17 @@ async def check_user(data: LoginInput):
         session.close()
 
 
-
-
-
-
-
-
-
 from utils.user_filter import user_filtering
 
 # FILTER USERS BASED ON BRANCH...
-@router.get("/user_filter")
+@router.get("/user_filter", tags=["Users"], response_model=List[UserResponse])
 async def user_filter(btm_lvl_name: str):
-    
     return user_filtering(btm_lvl_name)
-
-
 
 
 # Get a particular message for a particular user
 # Endpoint to fetch reference data and update `exp_message`
-@router.get("/messages/{message_id}")
+@router.get("/messages/{message_id}", tags=["Messages"], response_model=MessageResponse)
 async def get_reference(message_id: int):
     session = Session()
 
@@ -250,9 +266,8 @@ async def get_reference(message_id: int):
         if not exp_message_record:
             raise HTTPException(status_code=404, detail="Message not found")
 
-        
         logging.debug(f'exp_message_record {exp_message_record}')
-        
+
         update_exp_message = (
             exp_message_table.update()
             .where(exp_message_table.c.id == message_id)
@@ -277,15 +292,12 @@ async def get_reference(message_id: int):
         raise HTTPException(status_code=500, detail=f"Error fetching reference data: {str(e)}")
 
     finally:
-        session.close()  # Ensure session is closed
-
-
-
+        session.close()
 
 
 # USER SEARCH API
 
-@router.get("/user-search")
+@router.get("/user-search", tags=["Users"], response_model=List[UserSearchResponse])
 async def get_users(
     user_ids: str = Query(..., description="List of user IDs separated by comma"),
     reference_id: int = Query(..., description="Reference ID")
@@ -337,11 +349,6 @@ async def get_users(
         return users
 
 
-
-
-
-
-
 # Helper function to convert DD-MM-YYYY to datetime
 def convert_to_datetime(date_str: str, end_of_day: bool = False) -> datetime:
     dt = datetime.strptime(date_str, "%d-%m-%Y")
@@ -350,7 +357,7 @@ def convert_to_datetime(date_str: str, end_of_day: bool = False) -> datetime:
     return dt
 
 # VIEW ALL SENT MESSAGES TO PARTICULAR USER:
-@router.get("/")
+@router.get("/", tags=["Messages"], response_model=dict)
 async def get_references(username: str, start_date: str = None, end_date: str = None):
     session = Session()
 

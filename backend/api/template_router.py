@@ -2,20 +2,20 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, select, DateTime
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError,NoSuchTableError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError, NoSuchTableError
 import logging
 from datetime import datetime
+import os
 
 logging.basicConfig(level=logging.DEBUG)
+
 # Database configuration
-import os
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@db:5432/mydatabase")
 
 router = APIRouter()
 
 engine = create_engine(DATABASE_URL)
 metadata = MetaData()
-
 
 # Define Pydantic models
 class TemplateCreate(BaseModel):
@@ -36,9 +36,8 @@ class Template(BaseModel):
 router = APIRouter()
 
 # Create a Template (POST)
-@router.post("/", response_model=Template)
+@router.post("/", response_model=Template, tags=["Templates"])
 async def create_template(template: TemplateCreate):
-
     # Define the templates table
     templates = Table(
         "templates",
@@ -51,7 +50,6 @@ async def create_template(template: TemplateCreate):
         Column("createdAt", DateTime, default=datetime.now),
         Column("modifiedAt", DateTime, default=datetime.now),
         extend_existing=True
-
     )
 
     # Create the table if it doesn't exist
@@ -78,11 +76,8 @@ async def create_template(template: TemplateCreate):
         session.rollback()
         raise HTTPException(status_code=500, detail=f"Error creating template, {e}")
 
-
-
-
 # Fetch Templates (GET)
-@router.get("/", response_model=list[Template])
+@router.get("/", response_model=list[Template], tags=["Templates"])
 async def get_templates(limit: int = Query(10, ge=1, le=100)):
     try:
         Session = sessionmaker(bind=engine)

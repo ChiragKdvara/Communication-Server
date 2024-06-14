@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy import create_engine, MetaData, Table, select, text
+from sqlalchemy import create_engine, MetaData, Table, text
 from sqlalchemy.orm import sessionmaker
 import os
 import logging
@@ -7,22 +7,27 @@ import logging
 from datetime import datetime, timedelta
 import pytz
 
-# Define the time zone for IST
-ist = pytz.timezone('Asia/Kolkata')
-
 # Initialize FastAPI Router
 router = APIRouter()
+
+# Define the time zone for IST
+ist = pytz.timezone('Asia/Kolkata')
 
 # Database setup
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@db:5432/mydatabase")
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)  # Correct sessionmaker setup
 
+from utils.table_hierarchy import find_relationships, find_bottom_most_level
+from utils.user_filter import user_filtering
 
 
 # FETCH ALL MESSAGES SENT...
-@router.get("/")
+@router.get("/", tags=["Messages"])
 async def view_messages(limit: int = Query(default=10, description="Limit the number of messages to fetch")):
+    """
+    Fetches all messages with limited results.
+    """
     session = Session()
     try:
         metadata = MetaData()
@@ -53,13 +58,13 @@ async def view_messages(limit: int = Query(default=10, description="Limit the nu
                {reference_table.name}.id = {exp_message_table.name}.reference_id 
             ORDER BY 
                 {exp_message_table.name}.sent_time DESC
+            LIMIT :limit
             """
         )
         logging.debug(f'query: {query}')
 
-
         # Execute the query and fetch all results
-        result = session.execute(query).fetchall()
+        result = session.execute(query, {"limit": limit}).fetchall()
         logging.debug(f'result: {result}')
 
         # Transform the result into a list of dictionaries
@@ -93,19 +98,12 @@ async def view_messages(limit: int = Query(default=10, description="Limit the nu
         session.close()  # Close the session to prevent resource leaks
 
 
-
-
-
-
-
-
-from utils.table_hierarchy import find_relationships,find_bottom_most_level
-from utils.user_filter import user_filtering
-
-
 # FETCH A PARTICULAR MESSAGE FOR USER...
-@router.get("/{id}")
+@router.get("/{id}", tags=["Messages"])
 async def get_reference_details(id: int):
+    """
+    Fetch details of a specific reference by ID.
+    """
     try:
         # Create metadata
         metadata = MetaData()
@@ -158,7 +156,6 @@ async def get_reference_details(id: int):
             read_messages = sum(1 for message in messages if message.read_status=='read')
             read_percentage = round((read_messages / total_messages) * 100, 2) if total_messages > 0 else 0
 
-
             # Add read_status_percentage to reference_dict
             reference_dict["read_status_percentage"] = read_percentage
 
@@ -174,7 +171,7 @@ async def get_reference_details(id: int):
             users = user_filtering(reference_dict["btm_lvl"])
 
             # Return the reference details
-            return {"reference_data": reference_dict}, users
+            return {"reference_data": reference_dict, "users": users}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching reference details: {str(e)}")

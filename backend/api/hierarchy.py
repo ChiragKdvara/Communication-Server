@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException,Query,status
+from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey,text,select
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey, text, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from typing import List, Dict
@@ -87,7 +87,7 @@ def insert_or_get(session, table, item_data: Dict[str, str], parent_column=None)
     session.commit()  # Commit to get the ID
     return result.inserted_primary_key[0]
 
-@router.post("/upload-hierarchy-data")
+@router.post("/upload-hierarchy-data", tags=["Hierarchy Data"], response_model=Dict[str, List[str]])
 async def create_tables_and_add_data(request: HierarchicalInput):
     # Start a new database session
     session = Session()
@@ -150,22 +150,7 @@ async def create_tables_and_add_data(request: HierarchicalInput):
         session.close()  # Ensure session closure
 
 
-
-
-
-
-
-
-
-
-
-# 
-# API to fetch hierarchy
-# Also the top most and bottom most tables
-# 
-
-from utils.table_hierarchy import find_relationships,find_top_most_level,find_bottom_most_level
-
+from utils.table_hierarchy import find_relationships, find_top_most_level, find_bottom_most_level
 
 # Function to traverse the hierarchy and return an ordered list of tables
 def get_ordered_table_hierarchy(relationships, top_most_level):
@@ -192,10 +177,8 @@ def get_ordered_table_hierarchy(relationships, top_most_level):
 
     return ordered_hierarchy
 
-
-
-# Get Values for each hierarchy level (Use in dropdown in the frontend):
-@router.get("/lvl-values")
+# Get Values for each hierarchy level (Use in dropdown in the frontend)
+@router.get("/lvl-values", tags=["Hierarchy Data"], response_model=Dict[str, List[Dict[str, str]]])
 async def get_lvl_tables_data():
     session = Session()  # Create a session for database operations
     data = {}
@@ -206,7 +189,7 @@ async def get_lvl_tables_data():
     try:
         # Get all tables starting with 'lvl_'
         relationships = find_relationships(engine)
-            # Find the top-most and bottom-most levels
+        # Find the top-most and bottom-most levels
         top_most = find_top_most_level(relationships)
         lvl_tables = get_ordered_table_hierarchy(relationships, top_most)
         logging.debug(f'lvl_tables: {lvl_tables}')
@@ -237,47 +220,8 @@ async def get_lvl_tables_data():
     finally:
         session.close() # Ensure the session is closed to prevent resource leaks
 
-# @router.get("/lvl_info")
-# async def get_lvl_info():
-#     # Get the relationships using the function
-#     relationships = find_relationships(engine)
 
-    # # Find the top-most and bottom-most levels
-    # top_most = find_top_most_level(relationships)
-#     bottom_most = find_bottom_most_level(relationships)
-
-#     # Get the ordered hierarchy based on the relationships
-#     ordered_hierarchy = get_ordered_table_hierarchy(relationships, top_most)
-
-#     # Return the ordered hierarchy without the "lvl_" prefix
-#     ordered_hierarchy_without_prefix = [table[4:] for table in ordered_hierarchy]
-
-#     return {
-#         "tables": ordered_hierarchy_without_prefix,
-#         "top_most": top_most[4:],  # remove "lvl_"
-#         "bottom_most": bottom_most[4:]  # remove "lvl_"
-#     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#----------------------------- FILTER BRANCH VALUES API  -------------------------------------------
-
-
-# Adjust the function to initialize the stack from the correct table
+# Function to generate the query string based on the filter type and value
 def generate_query_string(relationships, filter_type, filter_value):
     table_name = f"lvl_{filter_type.lower()}"
 
@@ -304,72 +248,44 @@ def generate_query_string(relationships, filter_type, filter_value):
             if child[0] not in visited:
                 stack.append((child[0], current_table))
 
-    # Determine the SELECT clause based on the given level
-    bottom_most_table = find_bottom_most_level(relationships)
+    # Determine the column to filter by (assuming 'name' for this example)
+    filter_column = f"{table_name}.name"
 
-    if table_name == top_most_table:
-        # For top-most level, return bottom-most level values
-        select_clause = f"{bottom_most_table}.name"
-    elif table_name == bottom_most_table:
-        # For bottom-most level, return all data in the hierarchy
-        select_clause = ", ".join([f"{table}.name" for table in visited])
-    else:
-        # For intermediate level, return parent data and bottom-most level data
-        select_clause = ", ".join([f"{bottom_most_table}.name"] + [f"{table}.name" for table in relationships[table_name]])
+    # Construct the final SQL query string
+    query_string = f"""
+    SELECT {', '.join([f'{t}.name AS {t}_name' for t in visited])}
+    FROM {top_most_table}
+    {' '.join(join_clauses)}
+    WHERE {filter_column} = :filter_value
+    """
+    logging.debug(f'query_string: {query_string}')
+    return query_string
 
-    # WHERE clause with the filter condition
-    where_clause = f"WHERE {table_name}.name = '{filter_value}'"
+# API to get all values matching filter (e.g., all branches in a region)
+@router.get("/hierarchy-filter", tags=["Hierarchy Data"], response_model=Dict[str, List[str]])
+async def get_filtered_values(filter_type: str = Query(...), filter_value: str = Query(...)):
+    session = Session()  # Create a session for database operations
 
-    # Construct the query string with FROM, INNER JOINs, SELECT, and WHERE clauses
-    query_str = f"SELECT {select_clause} FROM {top_most_table} {' '.join(join_clauses)} {where_clause};"
-    logging.debug(f'query_str: {query_str}')
-    return query_str
-
-
-# Function to execute the query and retrieve results
-def get_query_results(engine, query_str):
-    with engine.connect() as connection:
-        query = text(query_str)
-        result = connection.execute(query)
-        rows = result.fetchall()
-
-    if not rows:
-        raise HTTPException(status_code=404, detail="No results found")
-
-    # Return the results as a list of dictionaries for proper retrieval
-    result_data = []
-    for row in rows:
-        row_dict = {f"column_{i}": col for i, col in enumerate(row)}
-        result_data.append(row_dict)
-
-
-    return result_data
-
-
-# FastAPI endpoint to get filtered results
-@router.get("/get-data/")
-async def get_filtered_results(
-    filter_type: str = Query(..., description="Type of filter"),
-    filter_value: str = Query(..., description="Value to filter by"),
-):
     try:
-        # Get relationships between tables
+        # Reflect the database schema
+        metadata = MetaData()
+        metadata.reflect(bind=engine)
+
+        # Find the relationships between tables
         relationships = find_relationships(engine)
 
-        # Generate the query string with INNER JOINs
-        query_str = generate_query_string(relationships, filter_type, filter_value)
+        # Generate the query string
+        query_string = generate_query_string(relationships, filter_type, filter_value)
 
-        # Get query results and return them
-        results = get_query_results(engine, query_str)
+        # Execute the query and fetch results
+        result = session.execute(text(query_string), {"filter_value": filter_value})
+        filtered_values = [dict(row) for row in result.fetchall()]
 
-        return {
-            "message": "Filtered results",
-            "data": results,
-        }
+        return {"filtered_values": filtered_values}
 
-    except HTTPException as e:
-        raise e
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching filtered results: {str(e)}")
+        session.rollback()  # Rollback on error
+        raise HTTPException(status_code=500, detail=f"Error fetching filtered values: {str(e)}")
+
+    finally:
+        session.close()  # Ensure the session is closed to prevent resource leaks

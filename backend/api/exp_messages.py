@@ -7,7 +7,8 @@ from datetime import datetime
 import re  # For regular expressions
 import os
 import logging
-from utils.table_hierarchy import find_relationships,find_bottom_most_level
+from utils.table_hierarchy import find_relationships, find_bottom_most_level
+from typing import List, Dict
 
 # Initialize FastAPI Router
 router = APIRouter()
@@ -18,9 +19,7 @@ engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)  # Correct sessionmaker setup
 metadata = MetaData()
 
-
 metadata.reflect(bind=engine)
-
 
 # Define Pydantic model for input data
 class ReferenceDataInput(BaseModel):
@@ -30,8 +29,13 @@ class ReferenceDataInput(BaseModel):
     btm_lvl: str
     user_count: int
 
+# Define Pydantic model for the response data
+class ExpMessageResponse(BaseModel):
+    message: str
+    exp_message_count: int
+
 # Endpoint to save reference data and create `exp_message`
-@router.post("/")
+@router.post("/", tags=["Exp Message"], response_model=ExpMessageResponse)
 async def expMessage(data: ReferenceDataInput):
     session = Session()  # Correct session creation
     relationships = find_relationships(engine)
@@ -39,8 +43,6 @@ async def expMessage(data: ReferenceDataInput):
     bottom_most_name = bottom_most[4:]  # Removing 'lvl_' prefix
     bottom_most_name_with_suffix = f"{bottom_most_name}_name"
     try:
-
-
         # Create tables if they don't exist
         logging.debug(f'bmn: {bottom_most_name_with_suffix}')
         reference_table = Table(
@@ -73,21 +75,20 @@ async def expMessage(data: ReferenceDataInput):
         # Create all tables in the database
         metadata.create_all(engine)
 
-        
         metadata.reflect(bind=engine)
         # Insert into `reference_table`
         reference_table = Table("reference_table", metadata, autoload_with=engine)  # Ensure correct table reference
         ins = reference_table.insert().values(
-        template_name=data.template_name,
-        message_title=data.message_title,
-        message_content=data.message_content,
-        **{bottom_most_name_with_suffix: data.btm_lvl},  # Correct key
-        user_count=data.user_count
-    )
+            template_name=data.template_name,
+            message_title=data.message_title,
+            message_content=data.message_content,
+            **{bottom_most_name_with_suffix: data.btm_lvl},  # Correct key
+            user_count=data.user_count
+        )
 
         result = session.execute(ins)  # Execute with the session
         session.commit()  # Commit the `reference_table` insertion
-        
+
         reference_id = result.inserted_primary_key[0]  # Get the auto-generated ID
 
         # Find branch_id from branch name
@@ -103,14 +104,14 @@ async def expMessage(data: ReferenceDataInput):
 
         btm_id = btm.id  # Get the branch ID
         logging.debug(f'btm id fetch one: {btm_id}')
-        user_btm_lvl=f'{bottom_most_name}_id'
+        user_btm_lvl = f'{bottom_most_name}_id'
         logging.debug(f'user_btm_lvl: {user_btm_lvl}')
 
         # Fetch users based on branch_id
         users_table = Table("users", metadata, autoload_with=engine)
         logging.debug(f'users_table: {users_table}')
         users = session.execute(
-            users_table.select().where(getattr(users_table.c, user_btm_lvl) == btm_id) # Fetch users with correct branch_id
+            users_table.select().where(getattr(users_table.c, user_btm_lvl) == btm_id)  # Fetch users with correct branch_id
         ).fetchall()
         logging.debug(f'users: {users}')
         if not users:
@@ -145,7 +146,7 @@ async def expMessage(data: ReferenceDataInput):
                     "reference_id": reference_id,
                     "sent_time": datetime.now(),
                     "read_status": "unread",
-                    "msg_title":data.message_title,
+                    "msg_title": data.message_title,
                     "msg_content": personalized_content,
                 }
             )
@@ -166,15 +167,3 @@ async def expMessage(data: ReferenceDataInput):
 
     finally:
         session.close()  # Ensure session is closed
-
-
-
-
-
-
-
-
-
-
-
-

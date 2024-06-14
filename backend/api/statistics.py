@@ -1,10 +1,13 @@
 import logging
-import os
 from datetime import datetime, timedelta
+from typing import Dict
+from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
-from sqlalchemy import create_engine, func,MetaData, Table
+from sqlalchemy import create_engine, func, MetaData, Table
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
+import os
+
 logging.basicConfig(level=logging.DEBUG)
 
 # Database URL from environment variable
@@ -20,9 +23,14 @@ metadata.reflect(bind=engine)
 # FastAPI router
 router = APIRouter()
 
+# Pydantic models
+class StatsResponse(BaseModel):
+    total_users: int
+    total_messages_today: int
 
-@router.get("/")
-async def get_stats():
+# Endpoint to get statistics
+@router.get("/", response_model=StatsResponse, tags=["Statistics"])
+async def get_stats() -> Dict[str, int]:
     session = Session()
     try:
         # Total number of users
@@ -33,7 +41,9 @@ async def get_stats():
         now = datetime.now()
         start_of_day = now - timedelta(days=1)
         exp_message_table = Table("exp_message", metadata, autoload_with=engine)
-        total_messages_today = session.query(func.count(exp_message_table.c.id)).filter(exp_message_table.c.sent_time >= start_of_day).scalar()
+        total_messages_today = session.query(func.count(exp_message_table.c.id)).filter(
+            exp_message_table.c.sent_time >= start_of_day
+        ).scalar()
 
         return {
             "total_users": total_users,
