@@ -75,6 +75,7 @@ const SelectFilter = () => {
       state: {
         ...passedState,
         selected_branch: selectedBranch,
+        templates_len: passedState?.templates_len,
         previousPage: location?.state?.previousPage, // Set the current page as the previous page
       },
     })
@@ -88,6 +89,7 @@ const SelectFilter = () => {
         template_name: passedState?.template_name,
         message_title: passedState?.message_title,
         message_content: passedState?.message_content,
+        templates_len: passedState?.templates_len,
         previousPage: location?.state?.previousPage, // Set the current page as the previous page
       },
     })

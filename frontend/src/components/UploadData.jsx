@@ -243,7 +243,7 @@ const Upload = () => {
             </button>
           </div>
         </div>
-        <div className="w-1 bg-primary mx-4 mt-20"></div>
+        <div className="w-1 h-3/4 bg-primary mx-4 mt-20"></div>
         <div className="w-1/2 p-4 pl-[4rem] pt-[4rem]">
           <h2 className="text-md font-semibold mb-2">Instructions</h2>
           <h3 className="text-lg font-semibold mb-1">File Upload:</h3>

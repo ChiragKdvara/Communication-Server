@@ -16,9 +16,7 @@ const ViewTemplates = () => {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/v1/templates/`, {
-          params: { limit: 5 },
-        })
+        const response = await axios.get(`${BASE_URL}/api/v1/templates/`)
         setTemplates(response.data)
         setTotalPages(Math.ceil(response.data.length / templatesPerPage))
       } catch (error) {
@@ -42,21 +40,20 @@ const ViewTemplates = () => {
         message_title: '',
         message_content: '',
         selected_branch: '',
-        previousPage: '/templates', // Set the previous page
+        templates_len: templates.length,
       },
     })
   }
 
   const onTemplateUseClick = (templateData) => {
     navigate(`/template/${templateData.template_id}`, {
-      state: { ...templateData, previousPage: '/templates' }, // Set the previous page and pass the template data
+      state: { ...templateData, previousPage: '/templates', templates_len: templates.length }, // Set the previous page and pass the template data
     })
   }
 
   const indexOfLastTemplate = currentPage * templatesPerPage
   const indexOfFirstTemplate = indexOfLastTemplate - templatesPerPage
   const currentTemplates = templates?.slice(indexOfFirstTemplate, indexOfLastTemplate)
-  console.log(indexOfLastTemplate, indexOfFirstTemplate, currentTemplates)
 
   return (
     <div className="h-screen w-full font-poppins">

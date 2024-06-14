@@ -21,6 +21,7 @@ const CreateTemplate = () => {
 
   const validateForm = () => {
     const validationErrors = {}
+    setErrors({})
 
     // Template name validation
     if (!templateData.template_name || templateData.template_name === false) {
@@ -49,6 +50,28 @@ const CreateTemplate = () => {
     return Object.keys(validationErrors).length === 0
   }
 
+  const handleBack = () => {
+    if (location?.state?.templates_len) {
+      navigate('/templates', {
+        state: {
+          template_name: '',
+          message_title: '',
+          message_content: '',
+          previousPage: 'create-template',
+        },
+      })
+    } else {
+      navigate('/admin', {
+        state: {
+          template_name: '',
+          message_title: '',
+          message_content: '',
+          previousPage: 'create-template',
+        },
+      })
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -62,7 +85,7 @@ const CreateTemplate = () => {
 
         console.log('Template saved:', response.data)
         navigate('/select-filter', {
-          state: { ...templateData, previousPage: '/create-template' },
+          state: { ...templateData, previousPage: '/create-template', templates_len: location?.state?.templates_len },
         })
         setTemplateData({
           template_name: '',
@@ -70,24 +93,10 @@ const CreateTemplate = () => {
           message_content: '',
         })
       } catch (error) {
-        setErrors({ unique_temp_name_error: error.response.data.detail })
+        // setErrors({ unique_temp_name_error: error.response.data.detail })
         console.error('Error saving template:', error)
       }
     }
-  }
-
-  const handleBack = () => {
-    setTemplateData({
-      template_name: '',
-      message_title: '',
-      message_content: '',
-    })
-    navigate(location?.state?.previousPage, {
-      state: {
-        ...templateData,
-        previousPage: 'create-template',
-      },
-    })
   }
 
   const handleAdd = (variable) => {

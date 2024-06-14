@@ -78,11 +78,17 @@ const AdminDashboard = () => {
           message_title: '',
           message_content: '',
           selected_branch: '',
+          templates_len: templates.length,
           previousPage: '/admin', // Set the previous page
         },
       })
     } else {
-      navigate('/templates')
+      console.log(templates.length)
+      navigate('/templates', {
+        state: {
+          templates_len: templates.length,
+        },
+      })
     }
   }
 
@@ -92,7 +98,10 @@ const AdminDashboard = () => {
 
   const onTemplateUseClick = (templateData) => {
     navigate(`/template/${templateData.template_id}`, {
-      state: { ...templateData, previousPage: '/admin' }, // Set the previous page and pass the template data
+      state: {
+        ...templateData,
+        previousPage: '/admin',
+      }, // Set the previous page and pass the template data
     })
   }
 
