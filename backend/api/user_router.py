@@ -73,14 +73,14 @@ class UserSearchResponse(BaseModel):
 
 # Endpoint for batch user creation
 @router.post("/add-users", tags=["Users"], response_model=dict)
-async def create_users_batch(request: Request):
+async def create_users_batch(request: UserBatchCreate):
     session = Session()
     errors = []
     successful_entries = 0
 
     try:
         # Read the raw JSON body
-        body = await request.json()
+        body = await request.model_dump_json()
         user_batch = body.get("users", [])
 
         relationships = find_relationships(engine)
