@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "docker build -t nexus.perdix.co:8086/repository/ai-ml-frontend:comm . && cd ../backend && docker build -t nexus.perdix.co:8086/repository/ai-ml-backend:comm . && cd .. && docker compose up",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
