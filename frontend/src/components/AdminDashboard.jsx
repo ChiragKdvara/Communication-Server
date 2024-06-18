@@ -128,11 +128,11 @@ const AdminDashboard = () => {
             <div className="flex flex-col w-1/4 gap-5 text-white font-medium justify-between">
               <div className="bg-primary h-1/2 rounded-[8px] text-start px-4">
                 <p>Total Users</p>
-                <h3 className="font-bold text-29xl m-0">{statisticsLoading ? 'Loading...' : statisticsResult ? statisticsResult.total_users : 'N/A'}</h3>
+                <h3 className="font-bold text-29xl m-0">{statisticsLoading ? 'Loading...' : statisticsResult ? statisticsResult?.total_users : 'N/A'}</h3>
               </div>
               <div className="bg-primary h-1/2 rounded-[8px] text-start px-4">
                 <p>Total Messages Sent Today</p>
-                <h3 className="font-bold text-29xl m-0">{statisticsLoading ? 'Loading...' : statisticsResult ? statisticsResult.total_messages_today : 'N/A'}</h3>
+                <h3 className="font-bold text-29xl m-0">{statisticsLoading ? 'Loading...' : statisticsResult ? statisticsResult?.total_messages_today : 'N/A'}</h3>
               </div>
             </div>
           </div>
