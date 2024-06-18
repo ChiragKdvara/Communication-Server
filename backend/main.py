@@ -7,6 +7,8 @@ from api.exp_messages import router as exp_messages
 from api.view_messages import router as view_messages
 from api.validate_router import router as validate_router
 from api.statistics import router as statistics
+from utils.max_body_size_limit import MaxRequestSizeMiddleware
+
 app = FastAPI()
 
 app.add_middleware(
@@ -16,6 +18,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add the MaxRequestSizeMiddleware to your FastAPI app
+app.add_middleware(MaxRequestSizeMiddleware, max_request_size=100*1024 * 1024)  # 100MB limit
+
 
 # Include the routers for different APIs
 app.include_router(hierarchy,prefix='/api/v1/hierarchy')
