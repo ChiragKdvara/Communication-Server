@@ -25,8 +25,7 @@ const Preview = () => {
             btm_lvl_name: data.selected_branch,
           },
         })
-
-        setUserCount(response.data.users.length)
+        setUserCount(response.data.length)
       } catch (error) {
         console.error('Error fetching user count:', error)
       } finally {
