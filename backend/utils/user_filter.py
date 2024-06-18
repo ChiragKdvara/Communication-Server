@@ -1,11 +1,20 @@
 # Import necessary modules
 from fastapi import  HTTPException
+from pydantic import BaseModel
 from sqlalchemy import create_engine,MetaData, Table,text
 from sqlalchemy.orm import sessionmaker
 
 import os
 import logging
 from utils.table_hierarchy import find_relationships,find_bottom_most_level
+
+
+class UserResponse(BaseModel):
+    id: int
+    # username: str
+    # email: str
+    # role: str
+    # btm_lvl_id: int
 
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/mydatabase")
@@ -59,9 +68,9 @@ def user_filtering(btm_lvl_name: str):
         users = []
         for row in result.fetchall():
             logging.debug(f'row: {row}')
-            users.append(row[0])
+            users.append(UserResponse(id=row[0]))
 
-        return {"users":users}
+        return users
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error filtering users: {str(e)}")
