@@ -205,8 +205,8 @@ async def get_lvl_tables_data():
 
             table_data = []
             for row in result.fetchall():  # Fetch all rows
-                # Construct dictionary using column values
-                row_dict = {table.columns[i].name: row[i] for i in range(len(row))}
+                # Construct dictionary using column values, ensuring all values are strings
+                row_dict = {table.columns[i].name: str(row[i]) for i in range(len(row))}
                 table_data.append(row_dict)  # Add the dictionary to the list
 
             data[table_name] = table_data  # Store in dictionary with the modified table name as key
@@ -218,7 +218,8 @@ async def get_lvl_tables_data():
         raise HTTPException(status_code=500, detail=f"Error fetching data: {str(e)}")
 
     finally:
-        session.close() # Ensure the session is closed to prevent resource leaks
+        session.close()  # Ensure the session is closed to prevent resource leaks
+
 
 
 # Function to generate the query string based on the filter type and value
