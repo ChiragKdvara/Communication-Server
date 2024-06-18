@@ -9,7 +9,7 @@ import os
 import logging
 from datetime import datetime
 from utils.table_hierarchy import find_relationships, find_bottom_most_level
-
+import json
 
 # Set up database connection
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/mydatabase")
@@ -39,10 +39,10 @@ class UserBatchCreate(BaseModel):
 
 class UserResponse(BaseModel):
     id: int
-    username: str
-    email: str
-    role: str
-    btm_lvl_id: int
+    # username: str
+    # email: str
+    # role: str
+    # btm_lvl_id: int
 
 
 class ErrorResponse(BaseModel):
@@ -80,7 +80,8 @@ async def create_users_batch(request: UserBatchCreate):
 
     try:
         # Read the raw JSON body
-        body = await request.model_dump_json()
+        body_str = request.model_dump_json()
+        body = json.loads(body_str)
         user_batch = body.get("users", [])
 
         relationships = find_relationships(engine)
@@ -400,8 +401,11 @@ async def get_references(username: str, start_date: str = None, end_date: str = 
         if not exp_messages:
             raise HTTPException(status_code=404, detail="No messages found for this user within the date range")
 
+        # Convert RowMapping objects to dictionaries
+        exp_messages_dict = [dict(msg) for msg in exp_messages]
+
         return {
-            "exp_messages": exp_messages
+            "exp_messages": exp_messages_dict
         }
 
     except Exception as e:
