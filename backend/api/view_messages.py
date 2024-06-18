@@ -58,13 +58,13 @@ async def view_messages(limit: int = Query(default=10, description="Limit the nu
                {reference_table.name}.id = {exp_message_table.name}.reference_id 
             ORDER BY 
                 {exp_message_table.name}.sent_time DESC
-            LIMIT :limit
             """
         )
         logging.debug(f'query: {query}')
 
         # Execute the query and fetch all results
-        result = session.execute(query, {"limit": limit}).fetchall()
+        # result = session.execute(query, {"limit": limit}).fetchall()
+        result = session.execute(query).fetchall()
         logging.debug(f'result: {result}')
 
         # Transform the result into a list of dictionaries
