@@ -36,8 +36,8 @@ const ViewSingleMessage = () => {
     const fetchReferenceDetails = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/api/v1/viewMessages/${id}`)
-        setReferenceDetails(response.data[0].reference_data)
-        setUserIds(response.data[1].users.join(',')) // Join user IDs into a comma-separated string
+        setReferenceDetails(response.data?.reference_data)
+        setUserIds(response.data?.users.map((user) => user.id)) // Extract user IDs from the response
       } catch (error) {
         console.error('Error fetching reference details:', error)
       }
@@ -49,14 +49,15 @@ const ViewSingleMessage = () => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/api/v1/users/user-search`, {
-          params: { user_ids: userIds, reference_id: id }, // Pass userIds as a string
+          params: { user_ids: userIds.join(','), reference_id: id }, // Join user IDs into a comma-separated string
         })
         setUsers(response.data)
+        console.log(response?.data)
       } catch (error) {
         console.error('Error fetching users:', error)
       }
     }
-    if (userIds.length > 0) {
+    if (userIds?.length > 0) {
       fetchUsers()
     }
   }, [BASE_URL, id, userIds])
@@ -93,7 +94,7 @@ const ViewSingleMessage = () => {
       <Header />
       {/* Header */}
       <div className="bg-primary w-full h-20 flex items-center justify-between">
-        <h1 className="m-0 p-4 text-white font-semibold truncate w-1/2">{referenceDetails ? referenceDetails.template_name : 'Loading...'}</h1>
+        <h1 className="m-0 p-4 text-white font-semibold truncate w-1/2">{referenceDetails ? referenceDetails?.template_name : 'Loading...'}</h1>
       </div>
       {/* Selected Filter Start */}
       <div className="px-4 rounded-md mt-4">
@@ -118,7 +119,7 @@ const ViewSingleMessage = () => {
               </div>
               <div className="flex flex-col w-full gap-2">
                 <button className="text-start m-0 border-secondary border-2 text-secondary bg-white font-poppins rounded-[8px] p-2 truncate">
-                  Branch: <span className="font-bold">{referenceDetails ? referenceDetails.btm_lvl : 'Loading...'}</span>
+                  Branch: <span className="font-bold">{referenceDetails ? referenceDetails?.btm_lvl : 'Loading...'}</span>
                 </button>
               </div>
             </div>
@@ -128,17 +129,17 @@ const ViewSingleMessage = () => {
             <div className="flex gap-4 items-center justify-between w-full">
               <div className="flex flex-col gap-2 w-1/3">
                 <p className="text-start m-0 bg-primary flex items-center justify-between text-[14px] font-bold text-white font-poppins rounded-[8px] p-2">
-                  <span className="font-medium">View Percentage</span> <span>{referenceDetails ? referenceDetails.read_status_percentage + '%' : 'Loading...'}</span>
+                  <span className="font-medium">View Percentage</span> <span>{referenceDetails ? referenceDetails?.read_status_percentage + '%' : 'Loading...'}</span>
                 </p>
               </div>
               <div className="flex flex-col gap-2 w-1/3">
                 <p className="text-start m-0 bg-primary flex items-center justify-between text-[14px] font-bold text-white font-poppins rounded-[8px] p-2">
-                  <span className="font-medium">Languages Translated</span> <span>{languages.length}</span>
+                  <span className="font-medium">Languages Translated</span> <span>{languages?.length}</span>
                 </p>
               </div>
               <div className="flex flex-col gap-2 w-1/3">
                 <p className="text-start m-0 bg-primary flex items-center justify-between text-[14px] font-bold text-white font-poppins rounded-[8px] p-2">
-                  <span className="font-medium">User Count</span> <span>{referenceDetails ? referenceDetails.user_count : 'Loading...'}</span>
+                  <span className="font-medium">User Count</span> <span>{referenceDetails ? referenceDetails?.user_count : 'Loading...'}</span>
                 </p>
               </div>
             </div>
@@ -153,7 +154,7 @@ const ViewSingleMessage = () => {
             isOpen ? ' border-b-0' : 'rounded-br-[8px] rounded-bl-[8px]'
           } cursor-pointer`}
           onClick={toggleAccordion}>
-          <h2 className="text-lg font-semibold">Title: {referenceDetails ? referenceDetails.message_title : 'Loading...'}</h2>
+          <h2 className="text-lg font-semibold">Title: {referenceDetails ? referenceDetails?.message_title : 'Loading...'}</h2>
           <svg className={`h-6 w-6 ${isOpen ? 'transform rotate-[-180]' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isOpen ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
           </svg>
@@ -161,7 +162,7 @@ const ViewSingleMessage = () => {
         {isOpen && (
           <div className={`flex justify-between items-start px-4 m-0 border-primary border-solid border-2 rounded-br-[8px] rounded-bl-[8px] ${isOpen ? ' border-t-0' : ''}`}>
             <div className="w-3/4 max-h-40 overflow-y-auto mt-4 mb-4">
-              <p className="mt-0">{referenceDetails ? referenceDetails.message_content : 'Loading...'}</p>
+              <p className="mt-0">{referenceDetails ? referenceDetails?.message_content : 'Loading...'}</p>
             </div>
             <div className="flex flex-col gap-2 py-4 mt-4 mb-4">
               <label htmlFor="languages" className="font-medium">
